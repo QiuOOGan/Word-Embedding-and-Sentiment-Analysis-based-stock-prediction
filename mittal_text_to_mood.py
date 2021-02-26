@@ -1,26 +1,13 @@
 import json
-from nltk.corpus import wordnet
+import nltk
+import math
+f = open('syn_to_POMS.json')
+SYN_TO_POMS = json.load(f)
+
+
 
 # https://soulandspiritmagazine.com/wp-content/uploads/2018/08/Forest-bathing-download.pdf
-POMS_65_words = ["friendly", "tense", "angry", "worn out",
-                "unhappy", "clear headed", "lively", "confused",
-                "sorry for things done", "shaky", "listless", "peeved",
-                "considerate", "sad", "active", "on edge",
-                "grouchy", "blue", "energetic",
-                "panicky", "hopeless", "relaxed", "unworthy",
-                "spiteful", "sympathetic", "uneasy", "restless",
-                "unable to concentrate", "fatigued", "helpful",
-                "annoyed", "discouraged", "resentful", "nervous",
-                "lonely", "miserable", "muddled", "cheerful", "bitter",
-                "exhausted", "anxious", "ready to fight", "good natured",
-                "gloomy", "desperate", "sluggish", "rebellious",
-                "helpless", "weary", "bewildered", "alert", "deceived",
-                "furious", "efficient", "trusting", "full of pep", "bad tempered",
-                "worthless", "forgetful", "carefree", "terrified", "guilty",
-                "vigorous", "uncertain about things", "bushed"]
-
-# TODO: MORE
-POMS_65_words_to_cat = {
+POMS_34_words_to_cat = {
     "tense": "ANX",
     "Angry": "ANG",
     "worn-out": "FAT",
@@ -35,18 +22,99 @@ POMS_65_words_to_cat = {
     "hopeless": "DEP",
     "uneasy": "ANX",
     "restless": "ANX",
-    "unable to concentrate": "CON"
+    "unable-to-concentrate": "CON",
+    "fatigued": "FAT",
+    "annoyed": "ANG",
+    "discouraged": "DEP",
+    "resentful": "ANG",
+    "nervous": "ANX",
+    "miserable": "DEP",
+    "bitter": "ANG",
+    "exhausted": "FAT",
+    "anxious": "ANX",
+    "helpless": "DEP",
+    "weary": "FAT",
+    "energized": "VIG",
+    "bewildered": "CON",
+    "furious": "VIG",
+    "worthless": "DEP",
+    "forgetful": "CON",
+    "vigorous": "VIG",
+    "uncertain": "CON",
+    "drained": "FAT"
 }
 
-for key in POMS_65_words_to_cat:
-    print(key, POMS_65_words_to_cat[key])
+def mittal_text_to_mood(articles):
+    POMS_34_words_score = {
+                            "tense": 0,
+                            "Angry": 0,
+                            "worn-out": 0,
+                            "unhappy": 0,
+                            "lively": 0,
+                            "confused": 0,
+                            "sad": 0,
+                            "active": 0,
+                            "on edge": 0,
+                            "grumpy": 0,
+                            "energetic": 0,
+                            "hopeless": 0,
+                            "uneasy": 0,
+                            "restless": 0,
+                            "unable-to-concentrate": 0,
+                            "fatigued": 0,
+                            "annoyed": 0,
+                            "discouraged": 0,
+                            "resentful": 0,
+                            "nervous": 0,
+                            "miserable": 0,
+                            "bitter": 0,
+                            "exhausted": 0,
+                            "anxious": 0,
+                            "helpless": 0,
+                            "weary": 0,
+                            "energized": 0,
+                            "bewildered": 0,
+                            "furious": 0,
+                            "worthless": 0,
+                            "forgetful": 0,
+                            "vigorous": 0,
+                            "uncertain": 0,
+                            "drained": 0
+    }
+    for article in articles:
+        for word in nltk.word_tokenize(article):
+            if word in SYN_TO_POMS:
+                POMS_34_words_score[SYN_TO_POMS[word.lower()]] += 1
+                # mood_states[POMS_34_words_to_cat[SYN_TO_POMS[word.lower()]]] += 1
+    all_occurrance = sum(POMS_34_words_score.values())
+    for word in POMS_34_words_score:
+        POMS_34_words_score[word] /= all_occurrance 
+    
+    return poms_to_states(POMS_34_words_score)
+    # return POMS_34_words_score
 
-syn_to_POMS = {}
-for word in POMS_65_words:
-    for ss in wordnet.synsets(word):
-        for name in ss.lemma_names():
-            if name not in syn_to_POMS:
-                syn_to_POMS[name] = word
 
-with open('syn_to_POMS.json', 'w') as fp:
-    json.dump(syn_to_POMS, fp, sort_keys=True, indent=4)
+def poms_to_states(POMS_34_words_score):
+    mood_states = {"ANX":0, "ANG":0, "FAT":0, "DEP":0, "VIG":0, "CON":0}
+    for word in POMS_34_words_score:
+        score = POMS_34_words_score[word]
+        if score == 0: continue
+        mood = POMS_34_words_to_cat[word]
+        mood_states[mood] += math.ceil(score * 4)
+    return mood_states
+
+#TODO: How to calculate calm, alert and kind
+def states_to_final_4_mood(mood_states):
+    calm, happy, alert, kind = 0, 0, 0, 0
+    happy = mood_states["VIG"] + (-mood_states["DEP"])
+        
+
+
+
+# Usage:
+f2 = open('date_to_articles_array.json')
+news = json.load(f2)
+date = "2018-02-17"
+if date in news:
+    print(mittal_text_to_mood(news[date]))
+
