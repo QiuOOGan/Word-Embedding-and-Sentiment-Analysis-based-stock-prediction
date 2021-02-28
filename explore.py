@@ -3,6 +3,7 @@ import pandas as pd
 from pytorch_pretrained_bert.modeling import BertForSequenceClassification
 from transformers import AutoModelForSequenceClassification
 import nltk
+import nltk.sentiment.vader as vader
 from finbert.finbert import predict
 nltk.download('punkt')
 ###################### news.json ######################

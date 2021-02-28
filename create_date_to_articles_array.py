@@ -11,9 +11,9 @@ for key in data:
     for article in articles:
         date = article["pub_time"][:10]
         if date in date_to_articles:
-            date_to_articles[date].append(article["text"])
+            date_to_articles[date].append(article)
         else:
-            date_to_articles[date] = []
+            date_to_articles[date] = [article]
 
 with open('date_to_articles_array.json', 'w') as fp:
     json.dump(date_to_articles, fp, sort_keys=True, indent=4)
