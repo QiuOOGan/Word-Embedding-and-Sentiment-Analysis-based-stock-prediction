@@ -8,8 +8,9 @@ from keras.callbacks import EarlyStopping
 from keras.callbacks import LambdaCallback
 from preprocessing import *
 import numpy as np
+from tensorflow.python.client import device_lib
 from keras.models import save_model
-
+print(device_lib.list_local_devices())
 # Hpyerparameter Optimization:
 # round 1: lr=0.0033,num_Nodes=12,dropout=1,loss='mean_Squared_error'
 # round 2: lr=0.0066,num_Nodes=18, dropout=0.3,final_activation='sigmoid', loss='categorical_crossentropy'
