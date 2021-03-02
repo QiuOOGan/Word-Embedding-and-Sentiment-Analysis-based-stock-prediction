@@ -60,9 +60,9 @@ it consists news articles from 81 big companies. Each company has an array of ar
   day using the authors' method.
   
 #### So, we made some adjustments and make this method at least usable on our dataset:
-* 1. The author used SentiWordNet and a standard Thesaurus to find the synonym of the POMS questionnaire and extend their
-  word lists. We chose to use nltk.wordnet and the word vectors model downloaded from fasttext.cc (wiki-news-300d-1M.vec.zip) to extend
-  our word list. So the word list will be bigger and we can have more matches when calculating the score for a POMS word.
+* 1. The author used SentiWordNet and a standard Thesaurus to find the synonyms of the POMS questionnaire and extend their
+  word lists by adding the synonyms. We chose to use nltk.wordnet and the word vectors model downloaded from fasttext.cc (wiki-news-300d-1M.vec.zip) 
+  to extend our word list. Hence, the word list can be bigger so that we can have more matches when calculating the score for a POMS word.
 * 2. we combined the news from all companies on a given day to find the moods instead of from individual companies. In this way, we will
   have more texts to extract moods from.
   
