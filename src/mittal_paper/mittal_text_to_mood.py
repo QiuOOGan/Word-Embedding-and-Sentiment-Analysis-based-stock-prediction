@@ -1,8 +1,9 @@
 import json
 import nltk
 import math
-f = open('syn_to_POMS_wordnet.json')
-SYN_TO_POMS = json.load(f)
+
+f1 = open('syn_to_POMS_combined.json')
+SYN_TO_POMS = json.load(f1)
 
 
 
@@ -16,13 +17,13 @@ POMS_34_words_to_cat = {
     "confused": "CON",
     "sad": "DEP",
     "active": "VIG",
-    "on edge": "ANX",
+    "on-edge": "ANX",
     "grumpy": "ANG",
     "energetic": "VIG",
     "hopeless": "DEP",
     "uneasy": "ANX",
     "restless": "ANX",
-    "unable-to-concentrate": "CON",
+    "distracted": "CON",
     "fatigued": "FAT",
     "annoyed": "ANG",
     "discouraged": "DEP",
@@ -60,7 +61,7 @@ def mittal_text_to_mood(articles):
                             "hopeless": 0,
                             "uneasy": 0,
                             "restless": 0,
-                            "unable-to-concentrate": 0,
+                            "distracted": 0,
                             "fatigued": 0,
                             "annoyed": 0,
                             "discouraged": 0,

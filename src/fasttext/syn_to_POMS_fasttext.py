@@ -1,5 +1,5 @@
 import json
-from nltk.corpus import wordnet
+import gensim
 
 # Not Using This Questionaire since I can't find the map to the six states mood
 POMS_65_words = ["friendly", "tense", "angry", "worn out",
@@ -60,12 +60,15 @@ POMS_34_words_to_cat = {
 for key in POMS_34_words_to_cat:
     print(key, POMS_34_words_to_cat[key])
 
+
+model = gensim.models.KeyedVectors.load_word2vec_format('./src/fasttext/wiki-news-300d-1M.vec')
+
 syn_to_POMS = {}
 for word in POMS_34_words_to_cat:
-    for ss in wordnet.synsets(word):
-        for name in ss.lemma_names():
-            if name not in syn_to_POMS:
-                syn_to_POMS[name] = word
+    for similar_tup in model.most_similar(positive=[word],topn=10):
+        similar = similar_tup[0].lower()
+        if similar not in syn_to_POMS:
+            syn_to_POMS[similar] = word
 
-with open('syn_to_POMS_wordnet.json', 'w') as fp:
+with open('syn_to_POMS_fasttext.json', 'w') as fp:
     json.dump(syn_to_POMS, fp, sort_keys=True, indent=4)
