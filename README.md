@@ -11,7 +11,7 @@ In this project, we used several word embedding methods on the financial news da
 * [GoelMittal's Paper](http://cs229.stanford.edu/proj2011/GoelMittal-StockMarketPredictionUsingTwitterSentimentAnalysis.pdf)
 * [Software Repository for Accounting and Finance](https://sraf.nd.edu/textual-analysis/)
 
-## Data set:
+## Dataset:
 * news.json:
 it consists news articles from 81 big companies. Each company has an array of articles with field of "title", "text", "pul_time", and "url". Here is an example of "FaceBook":
   ```sh
@@ -29,7 +29,7 @@ it consists news articles from 81 big companies. Each company has an array of ar
   }
 
 * historical_price/[company_name]_2015-12-30_2021-02-21_minute.csv
-    They contain minute-level historical prices in the past 5 years for 86 companies. Here is how they look like:
+    They contain minute-level historical prices in the past 5 years for 86 companies. Here is what they look like:
     ```sh
     df = pd.read_csv("historical_price/FB_2015-12-30_2021-02-21_minute.csv")
     print(df.head(5))
@@ -51,6 +51,19 @@ it consists news articles from 81 big companies. Each company has an array of ar
 
 ## NLTK Vader
 
-## GoelMittal's Paper
-
+## GoelMittal's Paper (Mood Analysis)
+#### There are some problems to replicate this paper on our own dataset:
+* 1. In the paper, the authors used tweets to analysis public mood, but in our case, the text data are news where it
+  could be more difficult to extract than from the tweets since the tone in the news is more official and less casual.
+* 2. The number of the news articles (29630 articles across 5 years) is very limited compare to the tweets the authors
+  obtained (476 million across 6 months). There is a big chance that there won't be any mood extracted from a given
+  day using the authors' method.
+  
+#### So, we made some adjustment to this method and make this method at least usable on our dataset:
+* 1. The author used SentiWordNet and a standard Thesaurus to find the synonym of the POMS questionnaire and extend their
+  word lists. We chose to use nltk.wordnet and the word vectors model downloaded from fasttext.cc (wiki-news-300d-1M.vec.zip) to extend
+  our word list. So the word list will be bigger and we can have more matches when calculating the score for a POMS word.
+* 2. we combined the news from all companies on a given day to find the moods instead of from individual companies. In this way, we will
+  have more texts to extract moods from.
+  
 ## Software Repository for Accounting and Finance
