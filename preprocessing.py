@@ -35,16 +35,17 @@ def createFinbertJSON():
             article_arr = []
             if company in temp.keys():
                 article_arr = temp[company]
-            a = {}
+            a = {'positive' : 0, 'negative' : 0, 'neutral' : 0, 'sentiment_score' : 0}
             text = article['text']
             text = text.replace('\t', '')
             text = text.replace('\0', '')
             finbert_score = predict(text=text, model=model, write_to_csv=False, path=None)
-            logit_avg = finbert_score['logit'].sum()/len(finbert_score)
-            a['positive'] = logit_avg[0].item()
-            a['negative'] = logit_avg[1].item()
-            a['neutral'] = logit_avg[2].item()
-            a['sentiment_score'] = (finbert_score['sentiment_score'].sum()/len(finbert_score)).item()
+            if len(finbert_score) != 0:
+                logit_avg = finbert_score['logit'].sum()/len(finbert_score)
+                a['positive'] = logit_avg[0].item()
+                a['negative'] = logit_avg[1].item()
+                a['neutral'] = logit_avg[2].item()
+                a['sentiment_score'] = (finbert_score['sentiment_score'].sum()/len(finbert_score)).item()
             f = {}
             f['finbert'] = a
             article_arr.append(f)
@@ -55,7 +56,7 @@ def createFinbertJSON():
     with open('finbert.json', 'w') as fp:
         json.dump(finbertJSON, fp, sort_keys=True, indent=4)
 
-createFinbertJSON()
+# createFinbertJSON()
 # with open('date_to_company_to_arrayOfMethodsScores.json') as f:
 #     vaderJSON = json.load(f)
 # with open('finbert.json') as f:
