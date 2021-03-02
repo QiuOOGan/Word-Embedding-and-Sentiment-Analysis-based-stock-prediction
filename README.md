@@ -59,7 +59,7 @@ it consists news articles from 81 big companies. Each company has an array of ar
   obtained (476 million across 6 months). There is a big chance that there won't be any mood extracted from a given
   day using the authors' method.
   
-#### So, we made some adjustments and make this method at least usable on our dataset:
+#### So, we made some adjustments to make this method at least usable on our dataset:
 * 1. The author used SentiWordNet and a standard Thesaurus to find the synonyms of the POMS questionnaire and extend their
   word lists by adding the synonyms. We chose to use nltk.wordnet and the word vectors model downloaded from fasttext.cc (wiki-news-300d-1M.vec.zip) 
   to extend our word list. Hence, the word list can be bigger so that we can have more matches when calculating the score for a POMS word.
