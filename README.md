@@ -13,7 +13,7 @@ In this project, we used several word embedding methods on the financial news da
 
 ## Dataset:
 * news.json:
-it consists news articles from 81 big companies. Each company has an array of articles with field of "title", "text", "pul_time", and "url". Here is an example of "FaceBook":
+it contains news articles from 81 big companies. Each company has an array of articles with field of "title", "text", "pul_time", and "url". Here is an example of "FaceBook":
   ```sh
   {
     "FB": 
