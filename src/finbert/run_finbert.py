@@ -1,14 +1,12 @@
 import json
 from transformers import AutoModelForSequenceClassification
 import nltk
-import pandas as pd
 from finbert.finbert import predict
-import torch
-
+from src.sbert import text_summarization
 nltk.download('punkt')
 model = AutoModelForSequenceClassification.from_pretrained('./models/classifier_model/finbert-sentiment',
                                                            num_labels=3, cache_dir=None)
-
+summarize = True
 with open('news.json') as f:
     data = json.load(f)
 
@@ -35,6 +33,8 @@ for company in keys:
         text = article['text']
         text = text.replace('\t', '')
         text = text.replace('\0', '')
+        if summarize:
+            text = text_summarization.summarize(text)
         finbert_score = predict(text=text, model=model, write_to_csv=False, path=None)
         if len(finbert_score) != 0:
             logit_avg = finbert_score['logit'].sum()/len(finbert_score)
@@ -49,5 +49,6 @@ for company in keys:
         #add more features here
         finbertJSON[article['pub_time'][:10]] = temp
 
-with open('finbert.json', 'w') as fp:
+output_file = 'finbert.json' if not summarize else 'finbert_with_summarize.json'
+with open(output_file, 'w') as fp:
     json.dump(finbertJSON, fp, sort_keys=True, indent=4)
