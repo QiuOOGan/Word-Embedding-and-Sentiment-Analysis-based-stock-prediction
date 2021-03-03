@@ -14,11 +14,11 @@ categories = ["Negative", "Positive", "Uncertainty", "Litigious", "StrongModal",
 
 LM_Dict = {}
 for cat in categories:
-    first_word = dfs[cat].columns.values[0]
+    first_word = dfs[cat].columns.values[0].lower()
     LM_Dict[cat] = {}
     LM_Dict[cat][first_word] = 0
-    for word in dfs[cat][first_word]:
-        LM_Dict[cat][word] = 0
+    for word in dfs[cat][first_word.upper()]:
+        LM_Dict[cat][word.lower()] = 0
 
 with open('LM_Dict.json', 'w') as fp:
     json.dump(LM_Dict, fp, sort_keys=True, indent=4)
