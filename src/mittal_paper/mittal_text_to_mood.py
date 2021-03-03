@@ -84,9 +84,11 @@ def mittal_text_to_mood(articles):
     }
     for article in articles:
         for word in nltk.word_tokenize(article["text"]):
-            if word in SYN_TO_POMS:
+            if word.lower() in SYN_TO_POMS:
                 POMS_34_words_score[SYN_TO_POMS[word.lower()]] += 1
     all_occurrance = sum(POMS_34_words_score.values())
+    if all_occurrance == 0: return [0, 0, 0, 0]
+
     for word in POMS_34_words_score:
         POMS_34_words_score[word] /= all_occurrance 
     
@@ -101,12 +103,13 @@ def poms_to_states(POMS_34_words_score):
         if score == 0: continue
         mood = POMS_34_words_to_cat[word]
         mood_states[mood] += math.ceil(score * 4)
-    return mood_states
+
+    return list(mood_states.values())[2:]
 
 #TODO: How to calculate calm, alert and kind
-def states_to_final_4_mood(mood_states):
-    calm, happy, alert, kind = 0, 0, 0, 0
-    happy = mood_states["VIG"] + (-mood_states["DEP"])
+# def states_to_final_4_mood(mood_states):
+#     calm, happy, alert, kind = 0, 0, 0, 0
+#     happy = mood_states["VIG"] + (-mood_states["DEP"])
         
 
 
@@ -114,9 +117,12 @@ def states_to_final_4_mood(mood_states):
 # Usage:
 f2 = open('date_to_articles_array.json')
 news = json.load(f2)
-date = "2018-02-17"
 
-print(news[date])
-if date in news:
-    print(mittal_text_to_mood(news[date]))
+date_to_moods = {}
+for date in news:
+    date_to_moods[date] =  mittal_text_to_mood(news[date])
+
+with open('date_to_moods.json', 'w') as fp:
+    json.dump(date_to_moods, fp, sort_keys=True, indent=4)
+
 
