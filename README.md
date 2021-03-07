@@ -66,4 +66,24 @@ it contains news articles from 81 big companies. Each company has an array of ar
 * 2. we combined the news from all companies on a given day to find the moods instead of from individual companies. In this way, we will
   have more texts to extract moods from.
   
+#### Steps (./src/mittal_paper/):
+* 1. We find that the POMS has evolved from the 65-word questionnaire to a 34-word questionnaire. We then generated the synonyms of the words in 
+  the 34-word questionnaire by using the nltk wordnet as following:
+  ``` sh
+  POMS_34_words_to_cat = {
+    "tense": "ANX",
+    "Angry": "ANG",
+    "worn-out": "FAT",
+    ...
+  }
+  syn_to_POMS = {}
+  for word in POMS_34_words_to_cat:
+    for ss in wordnet.synsets(word):
+        for name in ss.lemma_names():
+            if name not in syn_to_POMS:
+                syn_to_POMS[name] = word
+
+   with open('syn_to_POMS_wordnet.json', 'w') as fp:
+       json.dump(syn_to_POMS, fp, sort_keys=True, indent=4)
+  ```
 ## Software Repository for Accounting and Finance
