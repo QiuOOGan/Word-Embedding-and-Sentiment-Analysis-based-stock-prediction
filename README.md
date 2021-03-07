@@ -67,8 +67,8 @@ it contains news articles from 81 big companies. Each company has an array of ar
   have more texts to extract moods from.
   
 #### Steps (./src/mittal_paper/):
-* 1. We find that the POMS has evolved from the 65-word questionnaire to a 34-word questionnaire. We then generated the synonyms of the words in 
-  the 34-word questionnaire by using the nltk wordnet as following:
+* 1. We find that the POMS mentioned in the paper has evolved from the 65-word questionnaire to a 34-word questionnaire. 
+  We then generated the synonyms of the words in the 34-word questionnaire by using the nltk wordnet as following:
   ``` sh
   POMS_34_words_to_cat = {
     "tense": "ANX",
@@ -85,5 +85,39 @@ it contains news articles from 81 big companies. Each company has an array of ar
 
    with open('syn_to_POMS_wordnet.json', 'w') as fp:
        json.dump(syn_to_POMS, fp, sort_keys=True, indent=4)
+  ```
+* 2. We then calculate the score of each POMS state as mentioned in the paper: Score of a POMS word equals to the # of times the word matched in
+  a day divided by # of total matches of all words. 
+  ```sh
+  f1 = open('syn_to_POMS_wordnet.json')
+  SYN_TO_POMS = json.load(f1)
+  def mittal_text_to_mood(articles):
+    POMS_34_words_score = {
+                            "tense": 0,
+                            "Angry": 0,
+                            "worn-out": 0,
+                            ...
+    }
+    for article in articles:
+        for word in nltk.word_tokenize(article["text"]):
+            if word.lower() in SYN_TO_POMS:
+                POMS_34_words_score[SYN_TO_POMS[word.lower()]] += 1
+    all_occurrance = sum(POMS_34_words_score.values())
+    if all_occurrance == 0: return [0, 0, 0, 0]
+
+    for word in POMS_34_words_score:
+        POMS_34_words_score[word] /= all_occurrance 
+    
+    return poms_to_states(POMS_34_words_score)
+
+def poms_to_states(POMS_34_words_score):
+    mood_states = {"ANX":0, "ANG":0, "FAT":0, "DEP":0, "VIG":0, "CON":0}
+    for word in POMS_34_words_score:
+        score = POMS_34_words_score[word]
+        if score == 0: continue
+        mood = POMS_34_words_to_cat[word]
+        mood_states[mood] += math.ceil(score * 4)
+
+    return list(mood_states.values())[2:]
   ```
 ## Software Repository for Accounting and Finance
