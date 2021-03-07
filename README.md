@@ -47,8 +47,6 @@ it contains news articles from 81 big companies. Each company has an array of ar
 
 ## Sentence Transfermers
 
-## fasttext
-
 ## NLTK Vader
 
 ## GoelMittal's Paper (Mood Analysis)
@@ -61,10 +59,11 @@ it contains news articles from 81 big companies. Each company has an array of ar
   
 #### So, we made some adjustments to make this method at least usable on our dataset:
 * 1. The author used SentiWordNet and a standard Thesaurus to find the synonyms of the POMS questionnaire and extend their
-  word lists by adding the synonyms. We chose to use nltk.wordnet and the word vectors model downloaded from fasttext.cc (wiki-news-300d-1M.vec.zip) 
+  word list by adding the synonyms. We chose to use nltk.wordnet and the word vectors model downloaded from fasttext.cc (wiki-news-300d-1M.vec.zip) 
   to extend our word list. Hence, the word list can be bigger so that we can have more matches when calculating the score for a POMS word.
 * 2. we combined the news from all companies on a given day to find the moods instead of from individual companies. In this way, we will
   have more texts to extract moods from.
+* 3. We find that the word list is still too small, so we used the word vector from fasttext.cc to further extend the word list. For more detial, please   look at the fasttext section.
   
 #### Steps (./src/mittal_paper/):
 * 1. We find that the POMS mentioned in the paper has evolved from the 65-word questionnaire to a 34-word questionnaire. 
@@ -132,4 +131,30 @@ it contains news articles from 81 big companies. Each company has an array of ar
    with open('date_to_moods.json', 'w') as fp:
        json.dump(date_to_moods, fp, sort_keys=True, indent=4)
   ```
+## fasttext
+#### We downloaded the word vectors wiki-news-300d-1M.vec.zip from https://fasttext.cc/docs/en/english-vectors.html and used it to extend the word list that mentioned in the method in Mettal's Paper. 
+* We simply added similar words of the POMS word into our word list. Although they are not entirely synonym, the result word list makes sense when we look at it. The code used to extend the word list is in ./src/fasttext/syn_to_POMS_fasttext.py
+```sh
+
+# Model downloaded from here: https://fasttext.cc/docs/en/english-vectors.html
+model = gensim.models.KeyedVectors.load_word2vec_format('./src/fasttext/wiki-news-300d-1M.vec')
+POMS_34_words_to_cat = {
+    "tense": "ANX",
+    "Angry": "ANG",
+    "worn-out": "FAT",
+    ...
+ }
+syn_to_POMS = {}
+for word in POMS_34_words_to_cat:
+    for similar_tup in model.most_similar(positive=[word],topn=10):
+        similar = similar_tup[0].lower()
+        if similar not in syn_to_POMS:
+            syn_to_POMS[similar] = word
+
+with open('syn_to_POMS_fasttext.json', 'w') as fp:
+    json.dump(syn_to_POMS, fp, sort_keys=True, indent=4)
+```
+
+
+
 ## Software Repository for Accounting and Finance
