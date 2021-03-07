@@ -87,7 +87,8 @@ it contains news articles from 81 big companies. Each company has an array of ar
        json.dump(syn_to_POMS, fp, sort_keys=True, indent=4)
   ```
 * 2. We then calculate the score of each POMS state as mentioned in the paper: Score of a POMS word equals to the # of times the word matched in
-  a day divided by # of total matches of all words. 
+  a day divided by # of total matches of all words. We then save a json file that maps a date to the moods score.
+  Note that the "Angry" and "Anxious" states rarely appears in the new articles, so we decided to use only "Fatigue", "Vigorous", "Confusion" and   "Depression" as our moods.
   ```sh
   f1 = open('syn_to_POMS_wordnet.json')
   SYN_TO_POMS = json.load(f1)
@@ -110,14 +111,25 @@ it contains news articles from 81 big companies. Each company has an array of ar
     
     return poms_to_states(POMS_34_words_score)
 
-def poms_to_states(POMS_34_words_score):
-    mood_states = {"ANX":0, "ANG":0, "FAT":0, "DEP":0, "VIG":0, "CON":0}
-    for word in POMS_34_words_score:
-        score = POMS_34_words_score[word]
-        if score == 0: continue
-        mood = POMS_34_words_to_cat[word]
-        mood_states[mood] += math.ceil(score * 4)
+  def poms_to_states(POMS_34_words_score):
+      mood_states = {"ANX":0, "ANG":0, "FAT":0, "DEP":0, "VIG":0, "CON":0}
+      for word in POMS_34_words_score:
+         score = POMS_34_words_score[word]
+         if score == 0: continue
+         mood = POMS_34_words_to_cat[word]
+         mood_states[mood] += math.ceil(score * 4)
+      return list(mood_states.values())[2:]
+      
+   # date_to_articles_array.json is a dictionary with date as key and articles as value
+   # The code used to generate the json file is ./src/mittal_paper/create_date_to_articles_array.py
+   f2 = open('date_to_articles_array.json')
+   news = json.load(f2)
 
-    return list(mood_states.values())[2:]
+   date_to_moods = {}
+   for date in news:
+       date_to_moods[date] =  mittal_text_to_mood(news[date])
+
+   with open('date_to_moods.json', 'w') as fp:
+       json.dump(date_to_moods, fp, sort_keys=True, indent=4)
   ```
 ## Software Repository for Accounting and Finance
