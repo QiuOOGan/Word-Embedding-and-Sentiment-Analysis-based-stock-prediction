@@ -43,12 +43,110 @@ it contains news articles from 81 big companies. Each company has an array of ar
     
 ## Prerequisites
 
-## finBERT
-
-## Sentence Transfermers
-
-## NLTK Vader
-
+## [finBERT](https://github.com/ProsusAI/finBERT)
+#### Setup
+* We start off by cloning the repo into a local directory and create a the corresponding conda environment with the necessary
+packages. The conda command is:
+    ````
+        conda env create -f environment.yml
+   ````
+  In our case, we don't need to create a flask server and only need the main functionality of predicting. 
+* We use the pretrained model provided by the team([link](https://huggingface.co/ProsusAI/finbert)). Make sure to have the
+correct directory setup. Our current setup put the model under /models/classifier_model/finbert-sentiment. 
+#### Running run_finbert.py(./src/finbert)
+* Make sure to import AutoModelForSequenceClassification from transformers. It differs from the Prosus repo's old example
+ since they just started migrating to transformers. Then again make sure you have the correct directory for the model.
+ To calculate a set of sentiment-related scores for each piece of news, we did it like this:
+     ```sh
+     temp = {}
+            if article['pub_time'][:10] in finbertJSON.keys():
+                temp = finbertJSON[article['pub_time'][:10]]
+            article_arr = []
+            if company in temp.keys():
+                article_arr = temp[company]
+            a = {'positive' : 0, 'negative' : 0, 'neutral' : 0, 'sentiment_score' : 0}
+            text = article['text']
+            text = text.replace('\t', '')
+            text = text.replace('\0', '')
+            if summarize:
+                text = text_summarization.summarize(text)
+            finbert_score = predict(text=text, model=model, write_to_csv=False, path=None)
+            print(finbert_score)
+            if len(finbert_score) != 0:
+                logit_avg = finbert_score['logit'].sum()/len(finbert_score)
+                a['positive'] = logit_avg[0].item()
+                a['negative'] = logit_avg[1].item()
+                a['neutral'] = logit_avg[2].item()
+                a['sentiment_score'] = (finbert_score['sentiment_score'].sum()/len(finbert_score)).item()
+            f = {}
+            f['finbert'] = a
+            article_arr.append(f)
+            temp[company] = article_arr
+            #add more features here
+            finbertJSON[article['pub_time'][:10]] = temp
+     ```
+#### The Finbert predictions
+* The prediction contains the corresponding sentence, the logit(positive, neutral or negative), prediction and sentiment_score.
+We extract the logits for each category and we extract the score. the final finbert.json file is in the following format. 
+Each company may have multiple articles so we take the average of the scores
+for each company on each day.
+  ```sh
+    {
+        "2016-01-28": {
+            "FB": [
+                {
+                    "finbert": {
+                        "negative": FLOAT,
+                        "neutral": FLOAT,
+                        "positive": FLOAT,
+                        "sentiment_score": FLOAT
+                    }
+                }
+            ]
+        }
+    }
+  ```
+## [Sentence Transformers](https://www.sbert.net/)
+* We mainly used the sentence_transformers, along with [LexRank](https://www.aaai.org/Papers/JAIR/Vol22/JAIR-2214.pdf)
+ for summarizing the news articles, as shown on their [repo](https://github.com/UKPLab/sentence-transformers/blob/master/examples/applications/text-summarization/text-summarization.py).
+ Since the articles can contain noise and finbert can be quite slow, we rank each article's content by centrality_scores
+  in the following way and we take the top five sentences:
+    ```sh
+     #Compute the sentence embeddings
+    embeddings = model.encode(sentences, convert_to_tensor=True)
+  
+    #Compute the pair-wise cosine similarities
+    cos_scores = util.pytorch_cos_sim(embeddings, embeddings).numpy()
+  
+    #Compute the centrality for each sentence
+    centrality_scores = degree_centrality_scores(cos_scores, threshold=None)
+  
+    #We argsort so that the first element is the sentence with the highest score
+    most_central_sentence_indices = np.argsort(-centrality_scores)
+    summarization = ""
+    for idx in most_central_sentence_indices[0:5]:
+        summarization += sentences[idx]
+    return summarization
+    ```
+## [NLTK Vader](https://www.nltk.org/_modules/nltk/sentiment/vader.html)
+* Vader is one of NLTK's sentiment analysis library and it is quite straight forward to use. It contains 4 scores, negative,
+neutral, positive and compound. We simply store the scores in the same fashion as we did for finbert.
+    ````
+        {
+            "2016-01-28": {
+                "FB": [
+                    {
+                        "vader": {
+                            "compound": FLOAT,
+                            "neg": FLOAT,
+                            "neu": FLOAT,
+                            "pos": FLOAT
+                        }
+                    }
+                ]
+            }
+        }
+    ````
 ## GoelMittal's Paper (Mood Analysis)
 #### There are some problems to replicate this paper on our own dataset:
 * 1. In the paper, the authors used tweets to analysis public mood, but in our case, the text data are news where it

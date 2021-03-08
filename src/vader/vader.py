@@ -1,9 +1,9 @@
 from nltk.sentiment import SentimentAnalyzer
 from nltk.sentiment.util import *
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import nltk
 
-
-
+nltk.download('vader_lexicon')
 sid = SentimentIntensityAnalyzer()
 
 f = open('news.json')

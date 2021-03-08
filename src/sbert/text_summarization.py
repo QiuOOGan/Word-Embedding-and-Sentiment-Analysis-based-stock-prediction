@@ -35,16 +35,12 @@ def summarize(document):
 
     #Compute the sentence embeddings
     embeddings = model.encode(sentences, convert_to_tensor=True)
-
     #Compute the pair-wise cosine similarities
     cos_scores = util.pytorch_cos_sim(embeddings, embeddings).numpy()
-
     #Compute the centrality for each sentence
     centrality_scores = degree_centrality_scores(cos_scores, threshold=None)
-
     #We argsort so that the first element is the sentence with the highest score
     most_central_sentence_indices = np.argsort(-centrality_scores)
-
     summarization = ""
     for idx in most_central_sentence_indices[0:5]:
         summarization += sentences[idx]

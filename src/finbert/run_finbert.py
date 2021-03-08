@@ -36,6 +36,7 @@ for company in keys:
         if summarize:
             text = text_summarization.summarize(text)
         finbert_score = predict(text=text, model=model, write_to_csv=False, path=None)
+        print(finbert_score)
         if len(finbert_score) != 0:
             logit_avg = finbert_score['logit'].sum()/len(finbert_score)
             a['positive'] = logit_avg[0].item()
