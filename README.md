@@ -1,5 +1,6 @@
 # Word Embedding and Sentiment Analysis Based Stock Prediction
 
+## Introduction:
 In this project, we used several word embedding methods on the financial news dataset to create additional features to the prehistorical stock price data set and trained a model to predict the close price at a specific time. The main tools we used are based on a language model called "BERT", i.e Bidirectional Encoder Representations from Transformers. In this project, we will train the model with each of the tools listed below and compare their results. In the end, we will try to ensemble the tools to train a final model.
 
 ## Tools:
@@ -27,7 +28,7 @@ it contains news articles from 81 big companies. Each company has an array of ar
         ]
         ...
   }
-
+  ```
 * historical_price/[company_name]_2015-12-30_2021-02-21_minute.csv
     They contain minute-level historical prices in the past 5 years for 86 companies. Here is what they look like:
     ```sh
@@ -40,16 +41,60 @@ it contains news articles from 81 big companies. Each company has an array of ar
     2      945357  286.0  106.8308  ...  106.80  2015-12-30 10:30:00  4.0
     3      945356  100.0  106.8700  ...  106.87  2015-12-30 11:52:00  1.0
     4      945355  200.0  106.9900  ...  106.99  2015-12-30 11:58:00  1.0
-    
+    ```
+## Data Preparation:
+* The prehistorical_price data is too big and the articles in news.json are limited. A company won't necessarily have one article on a given day. So we randomly sample 50 rows from a given company's price data in a given day and construct training and testing set base on that. The size of the final data set is about 300000.
+```sh
+def combine_prices():
+    directory = os.path.join("./historical_price/")
+    all_files = glob.glob(directory + "*")
+    combined_prices = open('combined_prices.csv','a')
+    isHeader = True
+    headers = ""
+    for file in all_files:
+        temp = pd.read_csv(file)
+        temp['company'] = file.split('\\')[-1].split('_')[0]
+        temp = temp.drop(temp.columns[0], axis=1)
+        headers = temp.columns
+        temp['t'] = temp['t'].apply(lambda x : x[:10])
+        dates = temp['t'].unique()
+        filtered_data = []
+        for date in dates:
+            prices_of_date = temp[(temp.t == date)]
+            prices_of_date = prices_of_date.sample(n=50 if len(prices_of_date) > 50 else len(prices_of_date), random_state=0)
+            filtered_data.append(prices_of_date)
+        temp = pd.concat(filtered_data).reset_index(drop=True)
+        print(temp.head)
+        temp.to_csv('temp.csv')
+        with open('temp.csv', 'r') as f:
+            for line in f:
+                if isHeader:
+                    isHeader = False
+                    continue
+                combined_prices.write(line)
+            isHeader = True
+    combined_prices.close()
+   ```
 ## Prerequisites
-
+* 1 Install [finBERT](https://github.com/ProsusAI/finBERT) as the reository suggested. Specifically, you need the model downloaded from this link: [model's link](https://huggingface.co/ProsusAI/finbert)
+* 2 Install [Sentence Transformers](https://github.com/UKPLab/sentence-transformers).
+* 3 Vader. Install nltk
+``` sh
+ pip install nltk
+```
+* 4 [fasttext](https://fasttext.cc). Specifically, you need the model: wiki-news-300d-1M.vec.zip from this [link](https://fasttext.cc/docs/en/english-vectors.html)
+* 5 gensim
+``` sh
+pip install gensim
+```
+* 6 [SRAF: Loughran-McDonald Sentiment Word Lists](https://sraf.nd.edu/textual-analysis/resources/)
 ## [finBERT](https://github.com/ProsusAI/finBERT)
 #### Setup
 * We start off by cloning the repo into a local directory and create a the corresponding conda environment with the necessary
 packages. The conda command is:
-    ````
+   ```sh
         conda env create -f environment.yml
-   ````
+   ```
   In our case, we don't need to create a flask server and only need the main functionality of predicting. 
 * We use the pretrained model provided by the team([link](https://huggingface.co/ProsusAI/finbert)). Make sure to have the
 correct directory setup. Our current setup put the model under /models/classifier_model/finbert-sentiment. 
@@ -147,6 +192,38 @@ neutral, positive and compound. We simply store the scores in the same fashion a
             }
         }
     ````
+* The code used to generate this file is ./src/vader/vader.py:
+   ```sh
+   nltk.download('vader_lexicon')
+   sid = SentimentIntensityAnalyzer()
+
+   f = open('news.json')
+   data = json.load(f)
+   article_sample = data["FB"][0]
+   print("Article Sample", json.dumps(article_sample, indent=4, sort_keys=True))
+
+   counter = 0
+   date_to_company_to_arrayOfMethodsScores = {}
+   for company in data:
+       articles_for_company = data[company]
+       for article in articles_for_company:
+           time = article["pub_time"][:10]
+           score = sid.polarity_scores(article["text"])
+           if time in date_to_company_to_arrayOfMethodsScores:
+               if company in date_to_company_to_arrayOfMethodsScores[time]:
+                   date_to_company_to_arrayOfMethodsScores[time][company].append({"vader":score})
+               else:
+                   date_to_company_to_arrayOfMethodsScores[time][company] = [{"vader":score}]
+           else:
+               date_to_company_to_arrayOfMethodsScores[time] = {}
+               date_to_company_to_arrayOfMethodsScores[time][company] = [{"vader":score}]
+           counter += 1
+           print("done: ", counter)
+
+
+   with open('date_to_company_to_vader.json', 'w') as fp:
+       json.dump(date_to_company_to_arrayOfMethodsScores, fp, sort_keys=True, indent=4)
+   ```
 ## GoelMittal's Paper (Mood Analysis)
 #### There are some problems to replicate this paper on our own dataset:
 * 1. In the paper, the authors used tweets to analysis public mood, but in our case, the text data are news where it
@@ -271,3 +348,72 @@ with open('syn_to_POMS_combined.json', 'w') as fp:
 
 
 ## Software Repository for Accounting and Finance
+* We chose to use "Loughran-McDonald Sentiment Word Lists" downloaded from https://sraf.nd.edu/textual-analysis/resources/. This table has seven **LM Sentiments**: Negative, Positive, Uncertainty, Litigious, Strong Modal, Weak Modal and Constraining. We use the same method mentioned in Goel Mittal's paper calculated each sentiment's score for each day. Again, we stored this feature as the same format as above methodes. We wrote two files to create this feature: **create_LM_Dictionary.py** and **sraf_sentiment.py**
+
+* Create a dictionary that maps the LM sentiments to their words. 
+```sh
+file_name = "LoughranMcDonald_SentimentWordLists_2018.xlsx"
+xl_file = pd.ExcelFile(file_name)
+
+dfs = {sheet_name: xl_file.parse(sheet_name) 
+          for sheet_name in xl_file.sheet_names}
+
+
+categories = ["Negative", "Positive", "Uncertainty", "Litigious", "StrongModal", "WeakModal", "Constraining"]
+
+LM_Dict = {}
+for cat in categories:
+    first_word = dfs[cat].columns.values[0].lower()
+    LM_Dict[cat] = {}
+    LM_Dict[cat][first_word] = 0
+    for word in dfs[cat][first_word.upper()]:
+        LM_Dict[cat][word.lower()] = 0
+
+with open('LM_Dict.json', 'w') as fp:
+    json.dump(LM_Dict, fp, sort_keys=True, indent=4)
+    
+f = open('LM_Dict.json')
+LM_Dict = json.load(f)
+
+```
+* Calculate the LM sentiment score and save them as a file:
+
+```sh
+def LM_text_to_sentiment():
+    f = open('news.json')
+    date_to_company_to_sraf = {}
+    data = json.load(f)
+    for company in data:
+	articles_for_company = data[company]
+	for article in articles_for_company:
+            time = article["pub_time"][0:10]
+	    score = calculate_sraf(article["text"])
+       	    if time in date_to_company_to_sraf:
+		if company in date_to_company_to_sraf[time]:
+		    date_to_company_to_sraf[time][company].append({"sraf": score})
+		else:
+		    date_to_company_to_sraf[time][company] = [{"sraf": score}]
+	    else:
+		date_to_company_to_sraf[time] = {}
+		date_to_company_to_sraf[time][company] = [{"sraf":score}]
+	return date_to_company_to_sraf
+
+def calculate_sraf(text):
+    sentiments = {"Negative":0, "Positive":0, "Uncertainty":0, "Litigious":0, "StrongModal":0, "WeakModal":0, "Constraining":0}
+    for word in nltk.word_tokenize(text):
+	for sentiment in sentiments:
+	    if word.lower() in LM_Dict[sentiment]:
+		sentiments[sentiment] += 1
+		    break
+
+    all_occurrance = sum(sentiments.values())
+    if all_occurrance == 0: return [0, 0, 0, 0, 0, 0, 0]
+    for sentiment in sentiments:
+	sentiments[sentiment] /= all_occurrance
+    return list(sentiments.values())
+
+
+with open('date_to_company_to_sraf.json', 'w') as fp:
+    json.dump(LM_text_to_sentiment(), fp, sort_keys=True, indent=4)
+```
+
