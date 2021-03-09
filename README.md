@@ -1,5 +1,6 @@
 # Word Embedding and Sentiment Analysis Based Stock Prediction
 
+## Introduction:
 In this project, we used several word embedding methods on the financial news dataset to create additional features to the prehistorical stock price data set and trained a model to predict the close price at a specific time. The main tools we used are based on a language model called "BERT", i.e Bidirectional Encoder Representations from Transformers. In this project, we will train the model with each of the tools listed below and compare their results. In the end, we will try to ensemble the tools to train a final model.
 
 ## Tools:
@@ -75,7 +76,18 @@ def combine_prices():
     combined_prices.close()
    ```
 ## Prerequisites
-
+* 1 Install [finBERT](https://github.com/ProsusAI/finBERT) as the reository suggested. Specifically, you need the model downloaded from this link: [model's link](https://huggingface.co/ProsusAI/finbert)
+* 2 Install [Sentence Transformers](https://github.com/UKPLab/sentence-transformers).
+* 3 Vader. Install nltk
+``` sh
+ pip install nltk
+```
+* 4 [fasttext](https://fasttext.cc). Specifically, you need the model: wiki-news-300d-1M.vec.zip from this [link](https://fasttext.cc/docs/en/english-vectors.html)
+* 5 gensim
+``` sh
+pip install gensim
+```
+* 6 [SRAF: Loughran-McDonald Sentiment Word Lists](https://sraf.nd.edu/textual-analysis/resources/)
 ## [finBERT](https://github.com/ProsusAI/finBERT)
 #### Setup
 * We start off by cloning the repo into a local directory and create a the corresponding conda environment with the necessary
