@@ -305,6 +305,7 @@ with open('syn_to_POMS_combined.json', 'w') as fp:
 ## Software Repository for Accounting and Finance
 * We chose to use "Loughran-McDonald Sentiment Word Lists" downloaded from https://sraf.nd.edu/textual-analysis/resources/. This table has seven **LM Sentiments**: Negative, Positive, Uncertainty, Litigious, Strong Modal, Weak Modal and Constraining. We use the same method mentioned in Goel Mittal's paper calculated each sentiment's score for each day. Again, we stored this feature as the same format as above methodes. We wrote two files to create this feature: **create_LM_Dictionary.py** and **sraf_sentiment.py**
 
+* Create a dictionary that maps the LM sentiments to their words. 
 ````
 file_name = "LoughranMcDonald_SentimentWordLists_2018.xlsx"
 xl_file = pd.ExcelFile(file_name)
@@ -329,8 +330,10 @@ with open('LM_Dict.json', 'w') as fp:
 f = open('LM_Dict.json')
 LM_Dict = json.load(f)
 
+````
+* Calculate the LM sentiment score and save them as a file:
 
-
+````
 def LM_text_to_sentiment():
 	f = open('news.json')
 	counter = 0
@@ -352,11 +355,6 @@ def LM_text_to_sentiment():
 			counter+=1
 			print("done: ", counter)
 	return date_to_company_to_sraf
-
-				
-
-
-
 
 def calculate_sraf(text):
 	sentiments = {"Negative":0, "Positive":0, "Uncertainty":0, "Litigious":0, "StrongModal":0, "WeakModal":0, "Constraining":0}
