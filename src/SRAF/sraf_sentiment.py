@@ -43,7 +43,7 @@ def calculate_sraf(text):
 				break
 
 	all_occurrance = sum(sentiments.values())
-	if all_occurrance == 0: return [0, 0, 0, 0, 0, 0]
+	if all_occurrance == 0: return [0, 0, 0, 0, 0, 0, 0]
 	for sentiment in sentiments:
 		sentiments[sentiment] /= all_occurrance
 	return list(sentiments.values())
