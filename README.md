@@ -303,3 +303,77 @@ with open('syn_to_POMS_combined.json', 'w') as fp:
 
 
 ## Software Repository for Accounting and Finance
+* We chose to use "Loughran-McDonald Sentiment Word Lists" downloaded from https://sraf.nd.edu/textual-analysis/resources/. This table has seven **LM Sentiments**: Negative, Positive, Uncertainty, Litigious, Strong Modal, Weak Modal and Constraining. We use the same method mentioned in Goel Mittal's paper calculated each sentiment's score for each day. Again, we stored this feature as the same format as above methodes. We wrote two files to create this feature: **create_LM_Dictionary.py** and **sraf_sentiment.py**
+
+````
+file_name = "LoughranMcDonald_SentimentWordLists_2018.xlsx"
+xl_file = pd.ExcelFile(file_name)
+
+dfs = {sheet_name: xl_file.parse(sheet_name) 
+          for sheet_name in xl_file.sheet_names}
+
+
+categories = ["Negative", "Positive", "Uncertainty", "Litigious", "StrongModal", "WeakModal", "Constraining"]
+
+LM_Dict = {}
+for cat in categories:
+    first_word = dfs[cat].columns.values[0].lower()
+    LM_Dict[cat] = {}
+    LM_Dict[cat][first_word] = 0
+    for word in dfs[cat][first_word.upper()]:
+        LM_Dict[cat][word.lower()] = 0
+
+with open('LM_Dict.json', 'w') as fp:
+    json.dump(LM_Dict, fp, sort_keys=True, indent=4)
+    
+f = open('LM_Dict.json')
+LM_Dict = json.load(f)
+
+
+
+def LM_text_to_sentiment():
+	f = open('news.json')
+	counter = 0
+	date_to_company_to_sraf = {}
+	data = json.load(f)
+	for company in data:
+		articles_for_company = data[company]
+		for article in articles_for_company:
+			time = article["pub_time"][0:10]
+			score = calculate_sraf(article["text"])
+			if time in date_to_company_to_sraf:
+				if company in date_to_company_to_sraf[time]:
+					date_to_company_to_sraf[time][company].append({"sraf": score})
+				else:
+					date_to_company_to_sraf[time][company] = [{"sraf": score}]
+			else:
+				date_to_company_to_sraf[time] = {}
+				date_to_company_to_sraf[time][company] = [{"sraf":score}]
+			counter+=1
+			print("done: ", counter)
+	return date_to_company_to_sraf
+
+				
+
+
+
+
+def calculate_sraf(text):
+	sentiments = {"Negative":0, "Positive":0, "Uncertainty":0, "Litigious":0, "StrongModal":0, "WeakModal":0, "Constraining":0}
+	for word in nltk.word_tokenize(text):
+		for sentiment in sentiments:
+			if word.lower() in LM_Dict[sentiment]:
+				sentiments[sentiment] += 1
+				break
+
+	all_occurrance = sum(sentiments.values())
+	if all_occurrance == 0: return [0, 0, 0, 0, 0, 0, 0]
+	for sentiment in sentiments:
+		sentiments[sentiment] /= all_occurrance
+	return list(sentiments.values())
+
+
+with open('date_to_company_to_sraf.json', 'w') as fp:
+    json.dump(LM_text_to_sentiment(), fp, sort_keys=True, indent=4)
+````
+
