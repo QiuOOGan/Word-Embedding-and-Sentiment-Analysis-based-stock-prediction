@@ -5,8 +5,6 @@ import math
 f = open('LM_Dict.json')
 LM_Dict = json.load(f)
 
-
-
 def LM_text_to_sentiment():
 	f = open('news.json')
 	counter = 0
@@ -28,11 +26,6 @@ def LM_text_to_sentiment():
 			counter+=1
 			print("done: ", counter)
 	return date_to_company_to_sraf
-
-				
-
-
-
 
 def calculate_sraf(text):
 	sentiments = {"Negative":0, "Positive":0, "Uncertainty":0, "Litigious":0, "StrongModal":0, "WeakModal":0, "Constraining":0}
