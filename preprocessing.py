@@ -124,6 +124,9 @@ def SRAFData():
             return result/len(lst)
         except KeyError:
             return 0
+        except IndexError:
+            return 0
+
     for s in sentiments.keys():
         df[s] =  df.apply(lambda x : getSRAFData(x, s), axis=1)
     df = df.drop('t', axis=1)
@@ -131,11 +134,73 @@ def SRAFData():
     df = df.sample(frac=1, random_state=0)
     df.to_pickle('sraf.pkl')
 
+def allData():
+        with open('date_to_moods.json') as f:
+            moods = json.load(f)
+        with open('finbert.json') as f:
+            finbertJSON = json.load(f)
+        with open('date_to_company_to_vader.json') as f:
+            vaderJSON = json.load(f)
+        with open('date_to_company_to_sraf.json') as f:
+            srafJSON = json.load(f)
+        df = pd.read_csv('combined_prices.csv', names=header)
+        df = df.drop('drop', axis=1)
+        df['calm'] = df.apply(lambda x: moods.get(x['t'], [0, 0, 0, 0])[0], axis=1)
+        df['happy'] = df.apply(lambda x: moods.get(x['t'], [0, 0, 0, 0])[1], axis=1)
+        df['alert'] = df.apply(lambda x: moods.get(x['t'], [0, 0, 0, 0])[2], axis=1)
+        df['kind'] = df.apply(lambda x: moods.get(x['t'], [0, 0, 0, 0])[3], axis=1)
+        def getFinData(x, dataName):
+            try:
+                lst = finbertJSON[x['t']][x['company']]
+                result = 0
+                for l in lst:
+                    result += l['finbert'][dataName]
+                return result / len(lst)
+            except KeyError:
+                return 0
+        df['finbert_negative'] = df.apply(lambda x: getFinData(x, 'negative'), axis=1)
+        df['finbert_neutral'] = df.apply(lambda x: getFinData(x, 'neutral'), axis=1)
+        df['finbert_positive'] = df.apply(lambda x: getFinData(x, 'positive'), axis=1)
+        df['finbert_sentiment_score'] = df.apply(lambda x: getFinData(x, 'sentiment_score'), axis=1)
+        def getVaderData(x, dataName):
+            try:
+                lst = vaderJSON[x['t']][x['company']]
+                result = 0
+                for l in lst:
+                    result += l['vader'][dataName]
+                return result / len(lst)
+            except KeyError:
+                return 0
+        df['vader_negative'] = df.apply(lambda x: getVaderData(x, 'neg'), axis=1)
+        df['vader_neutral'] = df.apply(lambda x: getVaderData(x, 'neu'), axis=1)
+        df['vader_positive'] = df.apply(lambda x: getVaderData(x, 'pos'), axis=1)
+        sentiments = {"sraf_negative": 0, "sraf_positive": 1, "sraf_uncertainty": 2, "sraf_litigious": 3,
+                      "sraf_strongamodal": 4, "sraf_weakmodal": 5, "sraf_constraining": 6}
+
+        def getSRAFData(x, dataName):
+            try:
+                lst = srafJSON[x['t']][x['company']]
+                result = 0
+                for l in lst:
+                    result += l['sraf'][sentiments[dataName]]
+                return result / len(lst)
+            except KeyError:
+                return 0
+            except IndexError:
+                return 0
+        for s in sentiments.keys():
+            df[s] = df.apply(lambda x: getSRAFData(x, s), axis=1)
+        df = df.drop('t', axis=1)
+        df = df.drop('company', axis=1)
+        df = df.sample(frac=1, random_state=0)
+        df.to_pickle('alldata.pkl')
+
 # moodData()
 # finberData()
-vaderData()
-SRAFData()
-df = pd.read_pickle('mood.pkl')
+# vaderData()
+# SRAFData()
+
+df = pd.read_pickle('sraf.pkl')
 print(df.head)
 df = df.dropna()
 ts = 0.2

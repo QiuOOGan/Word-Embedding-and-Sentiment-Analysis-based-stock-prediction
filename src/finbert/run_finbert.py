@@ -33,7 +33,7 @@ for company in keys:
         text = article['text']
         text = text.replace('\t', '')
         text = text.replace('\0', '')
-        if summarize:
+        if summarize and len(text) > 0:
             text = text_summarization.summarize(text)
         finbert_score = predict(text=text, model=model, write_to_csv=False, path=None)
         print(finbert_score)
