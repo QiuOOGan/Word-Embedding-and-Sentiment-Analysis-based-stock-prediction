@@ -27,7 +27,7 @@ it contains news articles from 81 big companies. Each company has an array of ar
         ]
         ...
   }
-
+  ```
 * historical_price/[company_name]_2015-12-30_2021-02-21_minute.csv
     They contain minute-level historical prices in the past 5 years for 86 companies. Here is what they look like:
     ```sh
@@ -40,16 +40,49 @@ it contains news articles from 81 big companies. Each company has an array of ar
     2      945357  286.0  106.8308  ...  106.80  2015-12-30 10:30:00  4.0
     3      945356  100.0  106.8700  ...  106.87  2015-12-30 11:52:00  1.0
     4      945355  200.0  106.9900  ...  106.99  2015-12-30 11:58:00  1.0
-    
+    ```
+## Data Preparation:
+* The prehistorical_price data is too big and the articles in news.json are limited. A company won't necessarily have one article on a given day. So we randomly sample 50 rows from a given company's price data in a given day and construct training and testing set base on that. The size of the final data set is about 300000.
+```sh
+def combine_prices():
+    directory = os.path.join("./historical_price/")
+    all_files = glob.glob(directory + "*")
+    combined_prices = open('combined_prices.csv','a')
+    isHeader = True
+    headers = ""
+    for file in all_files:
+        temp = pd.read_csv(file)
+        temp['company'] = file.split('\\')[-1].split('_')[0]
+        temp = temp.drop(temp.columns[0], axis=1)
+        headers = temp.columns
+        temp['t'] = temp['t'].apply(lambda x : x[:10])
+        dates = temp['t'].unique()
+        filtered_data = []
+        for date in dates:
+            prices_of_date = temp[(temp.t == date)]
+            prices_of_date = prices_of_date.sample(n=50 if len(prices_of_date) > 50 else len(prices_of_date), random_state=0)
+            filtered_data.append(prices_of_date)
+        temp = pd.concat(filtered_data).reset_index(drop=True)
+        print(temp.head)
+        temp.to_csv('temp.csv')
+        with open('temp.csv', 'r') as f:
+            for line in f:
+                if isHeader:
+                    isHeader = False
+                    continue
+                combined_prices.write(line)
+            isHeader = True
+    combined_prices.close()
+   ```
 ## Prerequisites
 
 ## [finBERT](https://github.com/ProsusAI/finBERT)
 #### Setup
 * We start off by cloning the repo into a local directory and create a the corresponding conda environment with the necessary
 packages. The conda command is:
-    ````
+   ```sh
         conda env create -f environment.yml
-   ````
+   ```
   In our case, we don't need to create a flask server and only need the main functionality of predicting. 
 * We use the pretrained model provided by the team([link](https://huggingface.co/ProsusAI/finbert)). Make sure to have the
 correct directory setup. Our current setup put the model under /models/classifier_model/finbert-sentiment. 
@@ -148,7 +181,7 @@ neutral, positive and compound. We simply store the scores in the same fashion a
         }
     ````
 * The code used to generate this file is ./src/vader/vader.py:
-   ````
+   ```sh
    nltk.download('vader_lexicon')
    sid = SentimentIntensityAnalyzer()
 
@@ -178,7 +211,7 @@ neutral, positive and compound. We simply store the scores in the same fashion a
 
    with open('date_to_company_to_vader.json', 'w') as fp:
        json.dump(date_to_company_to_arrayOfMethodsScores, fp, sort_keys=True, indent=4)
-   ````
+   ```
 ## GoelMittal's Paper (Mood Analysis)
 #### There are some problems to replicate this paper on our own dataset:
 * 1. In the paper, the authors used tweets to analysis public mood, but in our case, the text data are news where it
@@ -306,7 +339,7 @@ with open('syn_to_POMS_combined.json', 'w') as fp:
 * We chose to use "Loughran-McDonald Sentiment Word Lists" downloaded from https://sraf.nd.edu/textual-analysis/resources/. This table has seven **LM Sentiments**: Negative, Positive, Uncertainty, Litigious, Strong Modal, Weak Modal and Constraining. We use the same method mentioned in Goel Mittal's paper calculated each sentiment's score for each day. Again, we stored this feature as the same format as above methodes. We wrote two files to create this feature: **create_LM_Dictionary.py** and **sraf_sentiment.py**
 
 * Create a dictionary that maps the LM sentiments to their words. 
-````
+```sh
 file_name = "LoughranMcDonald_SentimentWordLists_2018.xlsx"
 xl_file = pd.ExcelFile(file_name)
 
@@ -330,10 +363,10 @@ with open('LM_Dict.json', 'w') as fp:
 f = open('LM_Dict.json')
 LM_Dict = json.load(f)
 
-````
+```
 * Calculate the LM sentiment score and save them as a file:
 
-````
+```sh
 def LM_text_to_sentiment():
     f = open('news.json')
     date_to_company_to_sraf = {}
@@ -370,5 +403,5 @@ def calculate_sraf(text):
 
 with open('date_to_company_to_sraf.json', 'w') as fp:
     json.dump(LM_text_to_sentiment(), fp, sort_keys=True, indent=4)
-````
+```
 
