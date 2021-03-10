@@ -224,7 +224,7 @@ neutral, positive and compound. We simply store the scores in the same fashion a
    with open('date_to_company_to_vader.json', 'w') as fp:
        json.dump(date_to_company_to_arrayOfMethodsScores, fp, sort_keys=True, indent=4)
    ```
-## GoelMittal's Paper (Mood Analysis)
+## Goel and Mittal's Paper (Mood Analysis)
 #### There are some problems to replicate this paper on our own dataset:
 * 1. In the paper, the authors used tweets to analysis public mood, but in our case, the text data are news where it
   could be more difficult to extract than from the tweets since the tone in the news is more official and less casual.
