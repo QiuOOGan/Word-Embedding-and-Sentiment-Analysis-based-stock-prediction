@@ -9,7 +9,7 @@ In this project, we used several word embedding methods on the financial news da
     * [Sentence Transfermers](https://github.com/UKPLab/sentence-transformers)
 * [fasttext](https://fasttext.cc/)
 * [NLTK Vader](https://www.nltk.org/_modules/nltk/sentiment/vader.html)
-* [GoelMittal's Paper](http://cs229.stanford.edu/proj2011/GoelMittal-StockMarketPredictionUsingTwitterSentimentAnalysis.pdf)
+* [Goel and Mittal's Paper](http://cs229.stanford.edu/proj2011/GoelMittal-StockMarketPredictionUsingTwitterSentimentAnalysis.pdf)
 * [Software Repository for Accounting and Finance](https://sraf.nd.edu/textual-analysis/)
 
 ## Dataset:
@@ -43,7 +43,7 @@ it contains news articles from 81 big companies. Each company has an array of ar
     4      945355  200.0  106.9900  ...  106.99  2015-12-30 11:58:00  1.0
     ```
 ## Data Preparation:
-* The prehistorical_price data is too big and the articles in news.json are limited. A company won't necessarily have one article on a given day. So we randomly sample 50 rows from a given company's price data in a given day and construct training and testing set base on that. The size of the final data set is about 300000.
+* The prehistorical_price data is too big and the articles in news.json are limited. A company won't necessarily have one article on a given day. So we randomly sample 50 rows from a given company's price data on a given day and construct training and testing set base on that. The size of the final data set is about 300000.
 ```sh
 def combine_prices():
     directory = os.path.join("./historical_price/")
@@ -224,7 +224,7 @@ neutral, positive and compound. We simply store the scores in the same fashion a
    with open('date_to_company_to_vader.json', 'w') as fp:
        json.dump(date_to_company_to_arrayOfMethodsScores, fp, sort_keys=True, indent=4)
    ```
-## GoelMittal's Paper (Mood Analysis)
+## Goel and Mittal's Paper (Mood Analysis)
 #### There are some problems to replicate this paper on our own dataset:
 * 1. In the paper, the authors used tweets to analysis public mood, but in our case, the text data are news where it
   could be more difficult to extract than from the tweets since the tone in the news is more official and less casual.
