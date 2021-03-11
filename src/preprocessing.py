@@ -17,9 +17,8 @@ def combine_prices():
     all_files = glob.glob(directory + "*")
     isHeader = True
     for file in all_files:
-        combined_prices = open('../combined_prices_rl.csv', 'a')
+        combined_prices = open('./combined_prices_rl.csv', 'a')
         temp = pd.read_csv(file)
-        filename = "./historical_price_df/" + file.split('\\')[-1].split('_')[0] + ".pkl"
         temp['t'] = temp['t'].apply(lambda x: x[:10])
         dates = temp['t'].unique()
         filtered_data = []
@@ -56,9 +55,9 @@ header.append('company')
 
 
 def moodData():
-    with open('../date_to_moods.json') as f:
+    with open('./date_to_moods.json') as f:
         moods = json.load(f)
-    df = pd.read_csv('../combined_prices_rl.csv', names=header)
+    df = pd.read_csv('./combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
     columns = df.columns
 
@@ -78,7 +77,7 @@ def finberData(summarize = False):
     filename = 'finbert_with_summarize' if summarize else 'finbert'
     with open(filename + '.json') as f:
         finbertJSON = json.load(f)
-    df = pd.read_csv('../combined_prices_rl.csv', names=header)
+    df = pd.read_csv('./combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
     def getFinData(x, date, dataName):
         try:
@@ -96,16 +95,17 @@ def finberData(summarize = False):
         # df['finbert_negative'] = df.apply(lambda x : getFinData(x, date, 'negative'), axis=1)
         # df['finbert_neutral'] = df.apply(lambda x: getFinData(x, date,'neutral'), axis=1)
         # df['finbert_positive'] = df.apply(lambda x: getFinData(x,date, 'positive'), axis=1)
-        df['finbert_sentiment_score'] = df.apply(lambda x: getFinData(x,date, 'sentiment_score'), axis=1)
+        df[str(i) + 'finbert_sentiment_score'] = df.apply(lambda x: getFinData(x,date, 'sentiment_score'), axis=1)
+        df = df.drop(date, axis=1)
     df = df.drop('day 31 date', axis=1)
     df = df.drop('company', axis=1)
     df = df.sample(frac=1, random_state=0)
     df.to_pickle(filename + '.pkl')
 
 def vaderData():
-    with open('../date_to_company_to_vader.json') as f:
+    with open('./date_to_company_to_vader.json') as f:
         vaderJSON = json.load(f)
-    df = pd.read_csv('../combined_prices_rl.csv', names=header)
+    df = pd.read_csv('./combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
     def getVaderData(x,date, dataName):
         try:
@@ -122,7 +122,8 @@ def vaderData():
         # df['vader_negative'] = df.apply(lambda x : getVaderData(x,date, 'neg'), axis=1)
         # df['vader_neutral'] = df.apply(lambda x: getVaderData(x,date, 'neu'), axis=1)
         # df['vader_positive'] = df.apply(lambda x: getVaderData(x,date, 'pos'), axis=1)
-        df['vader_compound'] = df.apply(lambda x: getVaderData(x,date, 'compound'), axis=1)
+        df[str(i) + 'vader_compound'] = df.apply(lambda x: getVaderData(x,date, 'compound'), axis=1)
+        df = df.drop(date, axis=1)
     df = df.drop('day 31 date', axis=1)
     df = df.drop('company', axis=1)
     df = df.sample(frac=1, random_state=0)
@@ -132,9 +133,9 @@ def SRAFData():
     sentiments = {"sraf_negative": 0, "sraf_positive": 1, "sraf_uncertainty": 2, "sraf_litigious": 3,
                   "sraf_strongamodal": 4, "sraf_weakmodal": 5, "sraf_constraining": 6}
 
-    with open('../date_to_company_to_sraf.json') as f:
+    with open('./date_to_company_to_sraf.json') as f:
         srafJSON = json.load(f)
-    df = pd.read_csv('../combined_prices_rl.csv', names=header)
+    df = pd.read_csv('./combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
     def getSRAFData(x,date, dataName):
         try:
@@ -151,22 +152,23 @@ def SRAFData():
     for i in range(1, 31):
         date = columns[2 * i - 1]
         for s in sentiments.keys():
-            df[s] =  df.apply(lambda x : getSRAFData(x,date, s), axis=1)
+            df[str(i) + s] =  df.apply(lambda x : getSRAFData(x,date, s), axis=1)
+        df = df.drop(date, axis=1)
     df = df.drop('day 31 date', axis=1)
     df = df.drop('company', axis=1)
     df = df.sample(frac=1, random_state=0)
     df.to_pickle('sraf.pkl')
 
 def allData():
-        with open('../date_to_moods.json') as f:
+        with open('./date_to_moods.json') as f:
             moods = json.load(f)
-        with open('../finbert_with_summarize.json') as f:
+        with open('./finbert_with_summarize.json') as f:
             finbertJSON = json.load(f)
-        with open('../date_to_company_to_vader.json') as f:
+        with open('./date_to_company_to_vader.json') as f:
             vaderJSON = json.load(f)
-        with open('../date_to_company_to_sraf.json') as f:
+        with open('./date_to_company_to_sraf.json') as f:
             srafJSON = json.load(f)
-        df = pd.read_csv('../combined_prices_rl.csv', names=header)
+        df = pd.read_csv('./combined_prices_rl.csv', names=header)
         df = df.drop('drop', axis=1)
         sentiments = {"sraf_negative": 0, "sraf_positive": 1, "sraf_uncertainty": 2, "sraf_litigious": 3,
                       "sraf_strongamodal": 4, "sraf_weakmodal": 5, "sraf_constraining": 6}
@@ -209,10 +211,11 @@ def allData():
             df[str(i) + 'happy'] = df.apply(lambda x: moods.get(x[date], [0, 0, 0, 0])[1], axis=1)
             df[str(i) + 'alert'] = df.apply(lambda x: moods.get(x[date], [0, 0, 0, 0])[2], axis=1)
             df[str(i) + 'kind'] = df.apply(lambda x: moods.get(x[date], [0, 0, 0, 0])[3], axis=1)
-            df['finbert_sentiment_score'] = df.apply(lambda x: getFinData(x,date, 'sentiment_score'), axis=1)
-            df['vader_compound'] = df.apply(lambda x: getVaderData(x, date, 'compound'), axis=1)
+            df[str(i) + 'finbert_sentiment_score'] = df.apply(lambda x: getFinData(x,date, 'sentiment_score'), axis=1)
+            df[str(i) + 'vader_compound'] = df.apply(lambda x: getVaderData(x, date, 'compound'), axis=1)
             for s in sentiments.keys():
-                df[s] = df.apply(lambda x: getSRAFData(x,date, s), axis=1)
+                df[str(i) + s] = df.apply(lambda x: getSRAFData(x,date, s), axis=1)
+            df = df.drop(date, axis=1)
 
         df = df.drop('day 31 date', axis=1)
         df = df.drop('company', axis=1)
@@ -226,7 +229,7 @@ def allData():
 # finberData(summarize=True)
 # allData()
 methods = ['mood','finbert','finbert_with_summarize','vader','sraf','alldata']
-
+methods = ['finbert']
 # finbert = pd.read_pickle('finbert_with_summarize.pkl')
 # vader = pd.read_pickle('vader.pkl')
 # df = pd.read_pickle('sraf.pkl')
