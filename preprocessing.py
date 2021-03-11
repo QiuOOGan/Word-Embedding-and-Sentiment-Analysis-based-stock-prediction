@@ -11,6 +11,8 @@ import numpy as np
 np.random.seed(0)
 header = ["day " + str(int(i / 2) + 1) if i % 2 == 1 else "day " + str(int(i / 2)) + " date" for i in
                 range(1, 63)]
+header.insert(0,'drop')
+header.append('company')
 def combine_prices():
     directory = os.path.join("./historical_price/")
     all_files = glob.glob(directory + "*")
@@ -49,10 +51,8 @@ def combine_prices():
     # df = df.drop(df.columns[0], axis=1)
     # df = df.dropna()
     # print(df.head)
+# combine_prices()
 
-combine_prices()
-header.insert(0,'drop')
-header.append('company')
 
 
 def moodData():
@@ -60,11 +60,15 @@ def moodData():
         moods = json.load(f)
     df = pd.read_csv('combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
-    df['calm'] = df.apply(lambda x : moods.get(x['t'],[0,0,0,0])[0], axis=1)
-    df['happy'] = df.apply(lambda x: moods.get(x['t'], [0, 0, 0, 0])[1], axis=1)
-    df['alert'] = df.apply(lambda x: moods.get(x['t'], [0, 0, 0, 0])[2], axis=1)
-    df['kind'] = df.apply(lambda x: moods.get(x['t'], [0, 0, 0, 0])[3], axis=1)
-    df = df.drop('t', axis=1)
+    columns = df.columns
+    for i in range(1, 31):
+        date = columns[2 * i - 1]
+        df[str(i) + 'calm'] = df.apply(lambda x : moods.get(x[date],[0,0,0,0])[0], axis=1)
+        df[str(i) + 'happy'] = df.apply(lambda x: moods.get(x[date], [0, 0, 0, 0])[1], axis=1)
+        df[str(i) + 'alert'] = df.apply(lambda x: moods.get(x[date], [0, 0, 0, 0])[2], axis=1)
+        df[str(i) + 'kind'] = df.apply(lambda x: moods.get(x[date], [0, 0, 0, 0])[3], axis=1)
+        df = df.drop(date, axis=1)
+    df = df.drop('day 31 date', axis=1)
     df = df.drop('company', axis=1)
     df = df.sample(frac=1, random_state=0)
     df.to_pickle('mood.pkl')
@@ -204,7 +208,11 @@ def allData():
         df = df.sample(frac=1, random_state=0)
         df.to_pickle('alldata.pkl')
 
-# moodData()
+def buildLSTMData():
+    df = pd.read_csv('combined_prices_rl.csv', names=header)
+    df = df.drop('drop', axis=1)
+    data = []
+moodData()
 # finberData()
 # vaderData()
 # SRAFData()
@@ -227,7 +235,7 @@ method_name = 'alldata'
 # df['alert'] = pd.Series(mood['alert'])
 # df['happy'] = pd.Series(mood['happy'])
 # df.to_pickle('alldata.pkl')
-df = pd.read_pickle('alldata.pkl')
+df = pd.read_pickle('mood.pkl')
 print(df.head)
 df = df.dropna()
 ts = 0.2
@@ -236,12 +244,12 @@ train = df[:-ts]
 test = df[-ts:]
 
 # Create Variables needed
-x_train = train.drop(columns='c')
+x_train = train.drop(columns='day 31')
 x_train = x_train.values
-y_train = train['c']
-x_test = test.drop(columns='c')
+y_train = train['day 31']
+x_test = test.drop(columns='day 31')
 x_test = x_test.values
-y_test = test['c']
+y_test = test['day 31']
 
 n = len(df.columns) - 1
 
