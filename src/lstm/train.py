@@ -7,26 +7,8 @@ from keras.callbacks import LambdaCallback
 from keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 from keras.optimizers import Adam
-data_x = np.array([
-    # Datapoint 1
-    [
-        # Input features at timestep 1, we have 30 timesteps
-        [1, 2, 3], # our features contain price at this time step, and senntiment(s) at this time step
-        # Input features at timestep 2
-        [4, 5, 6]
-    ],
-    # Datapoint 2
-    [
-        # Features at timestep 1
-        [7, 8, 9],
-        # Features at timestep 2
-        [10, 11, 12]
-    ]
-])
 
-# The desired model outputs.
-# We will create two data points, just for the example.
-data_y =  np.array([7, 13])
+
 method_name = 'mood'
 with open('./LSTM_data/' + method_name + '_x' + '.npy', 'rb') as f:
     data_x = np.load(f)
@@ -51,24 +33,29 @@ model.add(Dense(1)) # 1 output: Price
 # Train
 epochs = 100
 train_scores = []
+test_scores = []
+
 train_loss = LambdaCallback(on_epoch_end=lambda batch, logs: train_scores.append(logs['loss']))
 earlystopper = EarlyStopping(monitor='loss', patience=epochs/10)
-model.compile(optimizer='adam', loss='mean_squared_error', metrics=[RootMeanSquaredError()])
-model.fit(train_x, train_y, batch_size=2000, epochs=epochs, callbacks=[train_loss, earlystopper])
+model.compile(optimizer=Adam(beta_1=0.9, beta_2=0.999, epsilon=1e-8), loss='mean_squared_error', metrics=[RootMeanSquaredError()])
+test_loss = LambdaCallback(on_epoch_end=lambda batch, logs: test_scores.append(model.evaluate(test_x, test_y)[0]))
+model.fit(train_x, train_y, batch_size=2000, epochs=epochs, callbacks=[train_loss, test_loss, earlystopper])
 
 result = model.evaluate(test_x,test_y)[1]
 
 print(result)
 
 plt.figure()
-plt.title("RMSE: " + str(result))
+plt.title("Testing RMSE: " + str(result))
 plt.grid()
 plt.suptitle(method_name + " Learning Curve")
 plt.ylabel("loss")
 plt.xlabel("epochs")
 plt.ylim(top=max(train_scores),bottom=min(train_scores))
 plt.plot(np.linspace(0,len(train_scores),len(train_scores)), train_scores, linewidth=1, color="r",
-         label="Training score")
+         label="Training loss")
+plt.plot(np.linspace(0,len(test_scores),len(test_scores)), test_scores, linewidth=1, color="b",
+          label="Testing loss")
 legend = plt.legend(loc='upper right', shadow=True, fontsize='medium')
 legend.get_frame().set_facecolor('C0')
 
