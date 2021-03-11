@@ -11,14 +11,13 @@ import numpy as np
 np.random.seed(0)
 header = ["day " + str(int(i / 2) + 1) if i % 2 == 1 else "day " + str(int(i / 2)) + " date" for i in
                 range(1, 63)]
-header.insert(0,'drop')
-header.append('company')
+
 def combine_prices():
     directory = os.path.join("./historical_price/")
     all_files = glob.glob(directory + "*")
     isHeader = True
     for file in all_files:
-        combined_prices = open('combined_prices_rl.csv', 'a')
+        combined_prices = open('../combined_prices_rl.csv', 'a')
         temp = pd.read_csv(file)
         filename = "./historical_price_df/" + file.split('\\')[-1].split('_')[0] + ".pkl"
         temp['t'] = temp['t'].apply(lambda x: x[:10])
@@ -52,32 +51,16 @@ def combine_prices():
     # df = df.dropna()
     # print(df.head)
 # combine_prices()
-
+header.insert(0,'drop')
+header.append('company')
 
 
 def moodData():
-    with open('date_to_moods.json') as f:
+    with open('../date_to_moods.json') as f:
         moods = json.load(f)
-    df = pd.read_csv('combined_prices_rl.csv', names=header)
+    df = pd.read_csv('../combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
     columns = df.columns
-    # data_x = []
-    # data_y = []
-    #
-    # def saveToLSTMData(x):
-    #     datapoint = []
-    #     for i in range(1, 31):
-    #         timestamp = []
-    #         timestamp.append(x['day ' + str(i)])
-    #         for j in range(0, sentiment_feature_count):
-    #             timestamp.append(x[df.columns[i + 30 + j]])
-    #         datapoint.append(timestamp)
-    #     data_x.append(datapoint)
-    #     data_y.append(x['day 31'])
-    #
-    # df.apply(lambda x: saveToLSTMData(x), axis=1)
-    # data_x = np.array(data_x)
-    # data_y = np.array(data_y)
 
     for i in range(1, 31):
         date = columns[2 * i - 1]
@@ -90,16 +73,12 @@ def moodData():
     df = df.drop('company', axis=1)
     df = df.sample(frac=1, random_state=0)
     df.to_pickle('mood.pkl')
-    with open('./LSTM_data/' + method_name + '_x' + '.npy', 'wb') as f:
-        np.save(f, data_x)
-    with open('./LSTM_data/' + method_name + '_y' + '.npy', 'wb') as f:
-        np.save(f, data_y)
 
 def finberData(summarize = False):
     filename = 'finbert_with_summarize' if summarize else 'finbert'
     with open(filename + '.json') as f:
         finbertJSON = json.load(f)
-    df = pd.read_csv('combined_prices_rl.csv', names=header)
+    df = pd.read_csv('../combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
     def getFinData(x, date, dataName):
         try:
@@ -114,34 +93,37 @@ def finberData(summarize = False):
     columns = df.columns
     for i in range(1, 31):
         date = columns[2 * i - 1]
-        df['finbert_negative'] = df.apply(lambda x : getFinData(x, date, 'negative'), axis=1)
-        df['finbert_neutral'] = df.apply(lambda x: getFinData(x, date,'neutral'), axis=1)
-        df['finbert_positive'] = df.apply(lambda x: getFinData(x,date, 'positive'), axis=1)
-    # df['finbert_sentiment_score'] = df.apply(lambda x: getFinData(x, 'sentiment_score'), axis=1)
+        # df['finbert_negative'] = df.apply(lambda x : getFinData(x, date, 'negative'), axis=1)
+        # df['finbert_neutral'] = df.apply(lambda x: getFinData(x, date,'neutral'), axis=1)
+        # df['finbert_positive'] = df.apply(lambda x: getFinData(x,date, 'positive'), axis=1)
+        df['finbert_sentiment_score'] = df.apply(lambda x: getFinData(x,date, 'sentiment_score'), axis=1)
     df = df.drop('day 31 date', axis=1)
     df = df.drop('company', axis=1)
     df = df.sample(frac=1, random_state=0)
     df.to_pickle(filename + '.pkl')
 
 def vaderData():
-    with open('date_to_company_to_vader.json') as f:
+    with open('../date_to_company_to_vader.json') as f:
         vaderJSON = json.load(f)
-    df = pd.read_csv('combined_prices_rl.csv', names=header)
+    df = pd.read_csv('../combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
-    def getVaderData(x, dataName):
+    def getVaderData(x,date, dataName):
         try:
-            lst = vaderJSON[x['t']][x['company']]
+            lst = vaderJSON[x[date]][x['company']]
             result = 0
             for l in lst:
                 result += l['vader'][dataName]
             return result/len(lst)
         except KeyError:
             return 0
-    df['vader_negative'] = df.apply(lambda x : getVaderData(x, 'neg'), axis=1)
-    df['vader_neutral'] = df.apply(lambda x: getVaderData(x, 'neu'), axis=1)
-    df['vader_positive'] = df.apply(lambda x: getVaderData(x, 'pos'), axis=1)
-    df['vader_compound'] = df.apply(lambda x: getVaderData(x, 'compound'), axis=1)
-    df = df.drop('t', axis=1)
+    columns = df.columns
+    for i in range(1, 31):
+        date = columns[2 * i - 1]
+        # df['vader_negative'] = df.apply(lambda x : getVaderData(x,date, 'neg'), axis=1)
+        # df['vader_neutral'] = df.apply(lambda x: getVaderData(x,date, 'neu'), axis=1)
+        # df['vader_positive'] = df.apply(lambda x: getVaderData(x,date, 'pos'), axis=1)
+        df['vader_compound'] = df.apply(lambda x: getVaderData(x,date, 'compound'), axis=1)
+    df = df.drop('day 31 date', axis=1)
     df = df.drop('company', axis=1)
     df = df.sample(frac=1, random_state=0)
     df.to_pickle('vader.pkl')
@@ -150,13 +132,13 @@ def SRAFData():
     sentiments = {"sraf_negative": 0, "sraf_positive": 1, "sraf_uncertainty": 2, "sraf_litigious": 3,
                   "sraf_strongamodal": 4, "sraf_weakmodal": 5, "sraf_constraining": 6}
 
-    with open('date_to_company_to_sraf.json') as f:
+    with open('../date_to_company_to_sraf.json') as f:
         srafJSON = json.load(f)
-    df = pd.read_csv('combined_prices_rl.csv', names=header)
+    df = pd.read_csv('../combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
-    def getSRAFData(x, dataName):
+    def getSRAFData(x,date, dataName):
         try:
-            lst = srafJSON[x['t']][x['company']]
+            lst = srafJSON[x[date]][x['company']]
             result = 0
             for l in lst:
                 result += l['sraf'][sentiments[dataName]]
@@ -165,60 +147,32 @@ def SRAFData():
             return 0
         except IndexError:
             return 0
-
-    for s in sentiments.keys():
-        df[s] =  df.apply(lambda x : getSRAFData(x, s), axis=1)
-    df = df.drop('t', axis=1)
+    columns = df.columns
+    for i in range(1, 31):
+        date = columns[2 * i - 1]
+        for s in sentiments.keys():
+            df[s] =  df.apply(lambda x : getSRAFData(x,date, s), axis=1)
+    df = df.drop('day 31 date', axis=1)
     df = df.drop('company', axis=1)
     df = df.sample(frac=1, random_state=0)
     df.to_pickle('sraf.pkl')
 
 def allData():
-        with open('date_to_moods.json') as f:
+        with open('../date_to_moods.json') as f:
             moods = json.load(f)
-        with open('finbert_with_summarize.json') as f:
+        with open('../finbert_with_summarize.json') as f:
             finbertJSON = json.load(f)
-        with open('date_to_company_to_vader.json') as f:
+        with open('../date_to_company_to_vader.json') as f:
             vaderJSON = json.load(f)
-        with open('date_to_company_to_sraf.json') as f:
+        with open('../date_to_company_to_sraf.json') as f:
             srafJSON = json.load(f)
-        df = pd.read_csv('combined_prices_rl.csv', names=header)
+        df = pd.read_csv('../combined_prices_rl.csv', names=header)
         df = df.drop('drop', axis=1)
-        df['calm'] = df.apply(lambda x: moods.get(x['t'], [0, 0, 0, 0])[0], axis=1)
-        df['happy'] = df.apply(lambda x: moods.get(x['t'], [0, 0, 0, 0])[1], axis=1)
-        df['alert'] = df.apply(lambda x: moods.get(x['t'], [0, 0, 0, 0])[2], axis=1)
-        df['kind'] = df.apply(lambda x: moods.get(x['t'], [0, 0, 0, 0])[3], axis=1)
-        def getFinData(x, dataName):
-            try:
-                lst = finbertJSON[x['t']][x['company']]
-                result = 0
-                for l in lst:
-                    result += l['finbert'][dataName]
-                return result / len(lst)
-            except KeyError:
-                return 0
-        df['finbert_negative'] = df.apply(lambda x: getFinData(x, 'negative'), axis=1)
-        df['finbert_neutral'] = df.apply(lambda x: getFinData(x, 'neutral'), axis=1)
-        df['finbert_positive'] = df.apply(lambda x: getFinData(x, 'positive'), axis=1)
-        # df['finbert_sentiment_score'] = df.apply(lambda x: getFinData(x, 'sentiment_score'), axis=1)
-        def getVaderData(x, dataName):
-            try:
-                lst = vaderJSON[x['t']][x['company']]
-                result = 0
-                for l in lst:
-                    result += l['vader'][dataName]
-                return result / len(lst)
-            except KeyError:
-                return 0
-        df['vader_negative'] = df.apply(lambda x: getVaderData(x, 'neg'), axis=1)
-        df['vader_neutral'] = df.apply(lambda x: getVaderData(x, 'neu'), axis=1)
-        df['vader_positive'] = df.apply(lambda x: getVaderData(x, 'pos'), axis=1)
         sentiments = {"sraf_negative": 0, "sraf_positive": 1, "sraf_uncertainty": 2, "sraf_litigious": 3,
                       "sraf_strongamodal": 4, "sraf_weakmodal": 5, "sraf_constraining": 6}
-
-        def getSRAFData(x, dataName):
+        def getSRAFData(x, date, dataName):
             try:
-                lst = srafJSON[x['t']][x['company']]
+                lst = srafJSON[x[date]][x['company']]
                 result = 0
                 for l in lst:
                     result += l['sraf'][sentiments[dataName]]
@@ -227,24 +181,52 @@ def allData():
                 return 0
             except IndexError:
                 return 0
-        for s in sentiments.keys():
-            df[s] = df.apply(lambda x: getSRAFData(x, s), axis=1)
-        df = df.drop('t', axis=1)
+
+        def getFinData(x, date, dataName):
+            try:
+                lst = finbertJSON[x[date]][x['company']]
+                result = 0
+                for l in lst:
+                    result += l['finbert'][dataName]
+                return result / len(lst)
+            except KeyError:
+                return 0
+
+        def getVaderData(x, date, dataName):
+            try:
+                lst = vaderJSON[x[date]][x['company']]
+                result = 0
+                for l in lst:
+                    result += l['vader'][dataName]
+                return result / len(lst)
+            except KeyError:
+                return 0
+
+        columns = df.columns
+        for i in range(1, 31):
+            date = columns[2 * i - 1]
+            df[str(i) + 'calm'] = df.apply(lambda x: moods.get(x[date], [0, 0, 0, 0])[0], axis=1)
+            df[str(i) + 'happy'] = df.apply(lambda x: moods.get(x[date], [0, 0, 0, 0])[1], axis=1)
+            df[str(i) + 'alert'] = df.apply(lambda x: moods.get(x[date], [0, 0, 0, 0])[2], axis=1)
+            df[str(i) + 'kind'] = df.apply(lambda x: moods.get(x[date], [0, 0, 0, 0])[3], axis=1)
+            df['finbert_sentiment_score'] = df.apply(lambda x: getFinData(x,date, 'sentiment_score'), axis=1)
+            df['vader_compound'] = df.apply(lambda x: getVaderData(x, date, 'compound'), axis=1)
+            for s in sentiments.keys():
+                df[s] = df.apply(lambda x: getSRAFData(x,date, s), axis=1)
+
+        df = df.drop('day 31 date', axis=1)
         df = df.drop('company', axis=1)
         df = df.sample(frac=1, random_state=0)
         df.to_pickle('alldata.pkl')
 
-def buildLSTMData():
-    df = pd.read_csv('combined_prices_rl.csv', names=header)
-    df = df.drop('drop', axis=1)
-    data = []
 # moodData()
 # finberData()
 # vaderData()
 # SRAFData()
 # finberData(summarize=True)
 # allData()
-method_name = 'mood'
+methods = ['mood','finbert','finbert_with_summarize','vader','sraf','alldata']
+
 # finbert = pd.read_pickle('finbert_with_summarize.pkl')
 # vader = pd.read_pickle('vader.pkl')
 # df = pd.read_pickle('sraf.pkl')
@@ -261,24 +243,21 @@ method_name = 'mood'
 # df['alert'] = pd.Series(mood['alert'])
 # df['happy'] = pd.Series(mood['happy'])
 # df.to_pickle('alldata.pkl')
-df = pd.read_pickle(method_name + '.pkl')
-print(df.head)
-df = df.dropna()
-ts = 0.2
-ts = int(len(df)*ts)
-train = df[:-ts]
-test = df[-ts:]
 
-# Create Variables needed
-x_train = train.drop(columns='day 31')
-x_train = x_train.values
-y_train = train['day 31']
-x_test = test.drop(columns='day 31')
-x_test = x_test.values
-y_test = test['day 31']
-sentiment_feature_count = int((len(df.columns) - 31)/30)
-data_x = []
-data_y = []
+
+
+# ts = 0.2
+# ts = int(len(df)*ts)
+# train = df[:-ts]
+# test = df[-ts:]
+#
+# # Create Variables needed
+# x_train = train.drop(columns='day 31')
+# x_train = x_train.values
+# y_train = train['day 31']
+# x_test = test.drop(columns='day 31')
+# x_test = x_test.values
+# y_test = test['day 31']
 
 def saveToLSTMData(x):
     datapoint = []
@@ -291,15 +270,21 @@ def saveToLSTMData(x):
     data_x.append(datapoint)
     data_y.append(x['day 31'])
 
-df.apply(lambda x : saveToLSTMData(x), axis=1)
-data_x = np.array(data_x)
-data_y = np.array(data_y)
-with open('./LSTM_data/' + method_name + '_x' + '.npy', 'wb') as f:
-    np.save(f, data_x)
-with open('./LSTM_data/' + method_name + '_y' + '.npy', 'wb') as f:
-    np.save(f, data_y)
+for method_name in methods:
+    df = pd.read_pickle(method_name + '.pkl')
+    print(df.head)
+    df = df.dropna()
+    sentiment_feature_count = int((len(df.columns) - 31)/30)
+    data_x = []
+    data_y = []
 
-n = len(df.columns) - 1
+    df.apply(lambda x : saveToLSTMData(x), axis=1)
+    data_x = np.array(data_x)
+    data_y = np.array(data_y)
+    with open('./LSTM_data/' + method_name + '_x' + '.npy', 'wb') as f:
+        np.save(f, data_x)
+    with open('./LSTM_data/' + method_name + '_y' + '.npy', 'wb') as f:
+        np.save(f, data_y)
 
 
 
