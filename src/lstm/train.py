@@ -6,8 +6,8 @@ import numpy as np
 data_x = np.array([
     # Datapoint 1
     [
-        # Input features at timestep 1
-        [1, 2, 3],
+        # Input features at timestep 1, we have 30 timesteps
+        [1, 2, 3], # our features contain price at this time step, and senntiment(s) at this time step
         # Input features at timestep 2
         [4, 5, 6]
     ],
