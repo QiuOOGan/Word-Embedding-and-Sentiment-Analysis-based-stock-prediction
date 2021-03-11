@@ -3,6 +3,9 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, LSTM
 from tensorflow.keras.metrics import RootMeanSquaredError
 import numpy as np
+from keras.callbacks import LambdaCallback
+from keras.callbacks import EarlyStopping
+import matplotlib.pyplot as plt
 from keras.optimizers import Adam
 data_x = np.array([
     # Datapoint 1
@@ -29,7 +32,12 @@ with open('./LSTM_data/' + method_name + '_x' + '.npy', 'rb') as f:
     data_x = np.load(f)
 with open('./LSTM_data/' + method_name + '_y' + '.npy', 'rb') as f:
     data_y = np.load(f)
-
+testing_split = 0.2
+testing_split = int(len(data_x)*testing_split)
+train_x = data_x [:-testing_split]
+test_x = data_x[-testing_split:]
+train_y = data_y [:-testing_split]
+test_y = data_y[-testing_split:]
 dim = data_x.shape
 
 # Create Model
@@ -41,12 +49,28 @@ model.add(Dense(1)) # 1 output: Price
 
 
 # Train
-model.compile(optimizer=Adam(lr=0.01, beta_1=0.9, beta_2=0.999, epsilon=1e-8), loss='mean_squared_error', metrics=[RootMeanSquaredError()])
-model.fit(data_x, data_y, batch_size=2000, epochs=100)
+epochs = 100
+train_scores = []
+train_loss = LambdaCallback(on_epoch_end=lambda batch, logs: train_scores.append(logs['loss']))
+earlystopper = EarlyStopping(monitor='loss', patience=epochs/10)
+model.compile(optimizer='adam', loss='mean_squared_error', metrics=[RootMeanSquaredError()])
+model.fit(train_x, train_y, batch_size=2000, epochs=epochs, callbacks=[train_loss, earlystopper])
 
-result = model.evaluate(data_x,data_y)
-# Predict and get error
-# preds = model.predict(data_x)
-# rmse = np.sqrt(np.mean(preds-data_y) ** 2)
+result = model.evaluate(test_x,test_y)[1]
+
 print(result)
+
+plt.figure()
+plt.title("RMSE: " + str(result))
+plt.grid()
+plt.suptitle(method_name + " Learning Curve")
+plt.ylabel("loss")
+plt.xlabel("epochs")
+plt.ylim(top=max(train_scores),bottom=min(train_scores))
+plt.plot(np.linspace(0,len(train_scores),len(train_scores)), train_scores, linewidth=1, color="r",
+         label="Training score")
+legend = plt.legend(loc='upper right', shadow=True, fontsize='medium')
+legend.get_frame().set_facecolor('C0')
+
+plt.show()
 
