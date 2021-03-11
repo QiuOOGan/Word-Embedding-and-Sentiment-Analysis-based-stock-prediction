@@ -61,6 +61,24 @@ def moodData():
     df = pd.read_csv('combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
     columns = df.columns
+    # data_x = []
+    # data_y = []
+    #
+    # def saveToLSTMData(x):
+    #     datapoint = []
+    #     for i in range(1, 31):
+    #         timestamp = []
+    #         timestamp.append(x['day ' + str(i)])
+    #         for j in range(0, sentiment_feature_count):
+    #             timestamp.append(x[df.columns[i + 30 + j]])
+    #         datapoint.append(timestamp)
+    #     data_x.append(datapoint)
+    #     data_y.append(x['day 31'])
+    #
+    # df.apply(lambda x: saveToLSTMData(x), axis=1)
+    # data_x = np.array(data_x)
+    # data_y = np.array(data_y)
+
     for i in range(1, 31):
         date = columns[2 * i - 1]
         df[str(i) + 'calm'] = df.apply(lambda x : moods.get(x[date],[0,0,0,0])[0], axis=1)
@@ -72,6 +90,10 @@ def moodData():
     df = df.drop('company', axis=1)
     df = df.sample(frac=1, random_state=0)
     df.to_pickle('mood.pkl')
+    with open('./LSTM_data/' + method_name + '_x' + '.npy', 'wb') as f:
+        np.save(f, data_x)
+    with open('./LSTM_data/' + method_name + '_y' + '.npy', 'wb') as f:
+        np.save(f, data_y)
 
 def finberData(summarize = False):
     filename = 'finbert_with_summarize' if summarize else 'finbert'
@@ -79,20 +101,24 @@ def finberData(summarize = False):
         finbertJSON = json.load(f)
     df = pd.read_csv('combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
-    def getFinData(x, dataName):
+    def getFinData(x, date, dataName):
         try:
-            lst = finbertJSON[x['t']][x['company']]
+            lst = finbertJSON[x[date]][x['company']]
             result = 0
             for l in lst:
                 result += l['finbert'][dataName]
             return result/len(lst)
         except KeyError:
             return 0
-    df['finbert_negative'] = df.apply(lambda x : getFinData(x, 'negative'), axis=1)
-    df['finbert_neutral'] = df.apply(lambda x: getFinData(x, 'neutral'), axis=1)
-    df['finbert_positive'] = df.apply(lambda x: getFinData(x, 'positive'), axis=1)
+
+    columns = df.columns
+    for i in range(1, 31):
+        date = columns[2 * i - 1]
+        df['finbert_negative'] = df.apply(lambda x : getFinData(x, date, 'negative'), axis=1)
+        df['finbert_neutral'] = df.apply(lambda x: getFinData(x, date,'neutral'), axis=1)
+        df['finbert_positive'] = df.apply(lambda x: getFinData(x,date, 'positive'), axis=1)
     # df['finbert_sentiment_score'] = df.apply(lambda x: getFinData(x, 'sentiment_score'), axis=1)
-    df = df.drop('t', axis=1)
+    df = df.drop('day 31 date', axis=1)
     df = df.drop('company', axis=1)
     df = df.sample(frac=1, random_state=0)
     df.to_pickle(filename + '.pkl')
@@ -212,13 +238,13 @@ def buildLSTMData():
     df = pd.read_csv('combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
     data = []
-moodData()
+# moodData()
 # finberData()
 # vaderData()
 # SRAFData()
 # finberData(summarize=True)
 # allData()
-method_name = 'alldata'
+method_name = 'mood'
 # finbert = pd.read_pickle('finbert_with_summarize.pkl')
 # vader = pd.read_pickle('vader.pkl')
 # df = pd.read_pickle('sraf.pkl')
@@ -235,7 +261,7 @@ method_name = 'alldata'
 # df['alert'] = pd.Series(mood['alert'])
 # df['happy'] = pd.Series(mood['happy'])
 # df.to_pickle('alldata.pkl')
-df = pd.read_pickle('mood.pkl')
+df = pd.read_pickle(method_name + '.pkl')
 print(df.head)
 df = df.dropna()
 ts = 0.2
@@ -250,6 +276,28 @@ y_train = train['day 31']
 x_test = test.drop(columns='day 31')
 x_test = x_test.values
 y_test = test['day 31']
+sentiment_feature_count = int((len(df.columns) - 31)/30)
+data_x = []
+data_y = []
+
+def saveToLSTMData(x):
+    datapoint = []
+    for i in range(1, 31):
+        timestamp = []
+        timestamp.append(x['day ' + str(i)])
+        for j in range(0, sentiment_feature_count):
+            timestamp.append(x[df.columns[i + 30 + j]])
+        datapoint.append(timestamp)
+    data_x.append(datapoint)
+    data_y.append(x['day 31'])
+
+df.apply(lambda x : saveToLSTMData(x), axis=1)
+data_x = np.array(data_x)
+data_y = np.array(data_y)
+with open('./LSTM_data/' + method_name + '_x' + '.npy', 'wb') as f:
+    np.save(f, data_x)
+with open('./LSTM_data/' + method_name + '_y' + '.npy', 'wb') as f:
+    np.save(f, data_y)
 
 n = len(df.columns) - 1
 

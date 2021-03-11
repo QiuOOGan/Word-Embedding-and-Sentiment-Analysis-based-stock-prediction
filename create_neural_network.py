@@ -27,14 +27,14 @@ print(device_lib.list_local_devices())
 # finbert_with_summarize: lr=0.000003, num_Nodes=12, dropout=0.2, final_activation='relu',
 #                    loss_function='mean_squared_error', n=n
 # testing result: [0.03334576264023781, 0.03334576264023781]
-def create_network(lr=0.0000005, num_Nodes=12, dropout=0.1, final_activation='relu',
+def create_network(lr=0.0000007, num_Nodes=12, dropout=0.1, final_activation='relu',
                    loss_function='mean_squared_error', n=n):
 
     model = Sequential()
     model.add(Dense(num_Nodes, input_dim=n, activation='relu', kernel_initializer='random_uniform'))
-    # model.add(Dropout(dropout))
-    # model.add(Dense(num_Nodes, activation='relu', kernel_initializer='random_uniform'))
-    # model.add(Dropout(dropout))
+    model.add(Dropout(dropout))
+    model.add(Dense(num_Nodes, activation='relu', kernel_initializer='random_uniform'))
+    model.add(Dropout(dropout))
     model.add(Dense(1, activation=final_activation, kernel_initializer='random_uniform'))
     model.compile(optimizer=Adam(lr=lr, beta_1=0.9, beta_2=0.999, epsilon=1e-8), loss=loss_function,
                   metrics=['mean_squared_error'])
@@ -49,24 +49,24 @@ train_scores = []
 val_scores = []
 train_loss = LambdaCallback(on_epoch_end=lambda batch, logs: train_scores.append(logs['loss']))
 val_loss = LambdaCallback(on_epoch_end=lambda batch, logs: val_scores.append(logs['val_loss']))
-earlystopper = EarlyStopping(monitor='val_loss', patience=epochs/10)
-final_model.fit(x_train,y_train,epochs=epochs, validation_split=0.2, batch_size=1000, verbose=1,
-                callbacks=[train_loss, val_loss, earlystopper])
+earlystopper = EarlyStopping(monitor='loss', patience=epochs/10)
+final_model.fit(x_train,y_train,epochs=epochs, batch_size=50, verbose=1,
+                callbacks=[train_loss, earlystopper])
 
 #retrain for all training data and save the model
 test_scores = []
 final_model = create_network()
 test_loss = LambdaCallback(on_epoch_end=lambda batch, logs: test_scores.append(final_model.evaluate(x_test, y_test)[0]))
-final_model.fit(x_train, y_train, epochs=epochs, batch_size=1000, verbose=1)
-print("testing result:",final_model.evaluate(x_test, y_test))
+# final_model.fit(x_train, y_train, epochs=epochs, batch_size=1000, verbose=1)
+result = final_model.evaluate(x_test, y_test)[1]
 #save_model(final_model, 'model509b.h5')
 
 
 # Plotting loss curve of training loss, validation loss and test loss
 plt.figure()
-plt.title(method_name + " Learning Curve")
+plt.title("MSE: " + str(result))
 plt.grid()
-
+plt.suptitle(method_name + " Learning Curve")
 # plt.fill_between(np.linspace(0,len(train_scores),len(train_scores)), train_scores,
 #                   alpha=0.1, color="r")
 # plt.fill_between(np.linspace(0,len(val_scores),len(val_scores)), val_scores,
@@ -78,8 +78,8 @@ plt.xlabel("epochs")
 plt.ylim(top=max(train_scores),bottom=min(train_scores))
 plt.plot(np.linspace(0,len(train_scores),len(train_scores)), train_scores, linewidth=1, color="r",
          label="Training score")
-plt.plot(np.linspace(0,len(val_scores),len(val_scores)), val_scores, linewidth=1, color="g",
-          label="validation score")
+# plt.plot(np.linspace(0,len(val_scores),len(val_scores)), val_scores, linewidth=1, color="g",
+#           label="validation score")
 # plt.plot(np.linspace(0,len(test_scores),len(test_scores)), test_scores, linewidth=1, color="b",
 #           label="test score")
 legend = plt.legend(loc='upper right', shadow=True, fontsize='medium')
