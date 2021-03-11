@@ -50,7 +50,7 @@ def _power_method(transition_matrix, increase_power=True):
     while True:
         eigenvector_next = np.dot(transition, eigenvector)
 
-        if np.allclose(eigenvector_next, eigenvector):
+        if np.allclose(eigenvector_next, eigenvector, equal_nan=True):
             return eigenvector_next
 
         eigenvector = eigenvector_next

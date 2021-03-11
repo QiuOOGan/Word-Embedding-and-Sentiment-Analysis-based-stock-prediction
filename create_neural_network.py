@@ -15,16 +15,19 @@ print(device_lib.list_local_devices())
 # mood: lr=0.000003, num_Nodes=12, dropout=0.2, final_activation='relu',
 #                    loss_function='mean_squared_error', 1 layer relu.
 # testing result: [0.03302876278758049, 0.03302876278758049]
-# finbert: lr=0.000009, num_Nodes=12, dropout=0.2, final_activation='relu',
+# finbert: lr=0.000002, num_Nodes=12, dropout=0.2, final_activation='relu',
 #                    loss_function='mean_squared_error', 1 layer relu.
-#  testing result: [0.03783221170306206, 0.03783221170306206]
+#  testing result: [0.03307422250509262, 0.03307422250509262]
 # vader: lr=0.000003, num_Nodes=12, dropout=0.2, final_activation='relu',
 #                    loss_function='mean_squared_error', n=n
 # testing result: [0.03601681813597679, 0.03601681813597679]
 # sraf: lr=0.000003, num_Nodes=12, dropout=0.2, final_activation='relu',
 #                    loss_function='mean_squared_error', n=n
 # testing result: [0.03323354199528694, 0.03323354199528694]
-def create_network(lr=0.000003, num_Nodes=12, dropout=0.2, final_activation='relu',
+# finbert_with_summarize: lr=0.000003, num_Nodes=12, dropout=0.2, final_activation='relu',
+#                    loss_function='mean_squared_error', n=n
+# testing result: [0.03334576264023781, 0.03334576264023781]
+def create_network(lr=0.0000005, num_Nodes=12, dropout=0.1, final_activation='relu',
                    loss_function='mean_squared_error', n=n):
 
     model = Sequential()
@@ -37,7 +40,7 @@ def create_network(lr=0.000003, num_Nodes=12, dropout=0.2, final_activation='rel
                   metrics=['mean_squared_error'])
     return model
 
-epochs = 100
+epochs = 400
 
 # Build an ANN with 20% validation set using create_network. Record the validation loss.
 # wrapper = KerasClassifier(build_fn=create_network, epochs=epochs)
@@ -48,7 +51,7 @@ train_loss = LambdaCallback(on_epoch_end=lambda batch, logs: train_scores.append
 val_loss = LambdaCallback(on_epoch_end=lambda batch, logs: val_scores.append(logs['val_loss']))
 earlystopper = EarlyStopping(monitor='val_loss', patience=epochs/10)
 final_model.fit(x_train,y_train,epochs=epochs, validation_split=0.2, batch_size=1000, verbose=1,
-                callbacks=[train_loss, val_loss])
+                callbacks=[train_loss, val_loss, earlystopper])
 
 #retrain for all training data and save the model
 test_scores = []
@@ -61,7 +64,7 @@ print("testing result:",final_model.evaluate(x_test, y_test))
 
 # Plotting loss curve of training loss, validation loss and test loss
 plt.figure()
-plt.title("Learning Curve")
+plt.title(method_name + " Learning Curve")
 plt.grid()
 
 # plt.fill_between(np.linspace(0,len(train_scores),len(train_scores)), train_scores,

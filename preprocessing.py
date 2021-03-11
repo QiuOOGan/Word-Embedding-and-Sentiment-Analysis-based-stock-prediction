@@ -9,28 +9,35 @@ import pandas as pd
 import numpy as np
 
 np.random.seed(0)
-
+header = ["day " + str(int(i / 2) + 1) if i % 2 == 1 else "day " + str(int(i / 2)) + " date" for i in
+                range(1, 63)]
 def combine_prices():
     directory = os.path.join("./historical_price/")
     all_files = glob.glob(directory + "*")
-    combined_prices = open('combined_prices.csv','a')
     isHeader = True
-    headers = ""
     for file in all_files:
+        combined_prices = open('combined_prices_rl.csv', 'a')
         temp = pd.read_csv(file)
-        temp['company'] = file.split('\\')[-1].split('_')[0]
-        temp = temp.drop(temp.columns[0], axis=1)
-        headers = temp.columns
-        temp['t'] = temp['t'].apply(lambda x : x[:10])
+        filename = "./historical_price_df/" + file.split('\\')[-1].split('_')[0] + ".pkl"
+        temp['t'] = temp['t'].apply(lambda x: x[:10])
         dates = temp['t'].unique()
         filtered_data = []
         for date in dates:
             prices_of_date = temp[(temp.t == date)]
-            prices_of_date = prices_of_date.sample(n=50 if len(prices_of_date) > 50 else len(prices_of_date), random_state=0)
-            filtered_data.append(prices_of_date)
+            # prices_of_date = prices_of_date.sample(n=50 if len(prices_of_date) > 50 else len(prices_of_date), random_state=0)
+            filtered_data.append(prices_of_date.iloc[[0]])
         temp = pd.concat(filtered_data).reset_index(drop=True)
-        print(temp.head)
-        temp.to_csv('temp.csv')
+        closes = temp['c'].values
+        data = []
+        for i in range(30, len(closes)):
+            arr = []
+            for j in range(i-30, i+1):
+                arr.append(closes[j])
+                arr.append(dates[j])
+            data.append(np.array(arr))
+        data = pd.DataFrame(data, columns=header)
+        data['company'] = file.split('\\')[-1].split('_')[0]
+        data.to_csv('temp.csv')
         with open('temp.csv', 'r') as f:
             for line in f:
                 if isHeader:
@@ -38,19 +45,20 @@ def combine_prices():
                     continue
                 combined_prices.write(line)
             isHeader = True
-    combined_prices.close()
+        combined_prices.close()
     # df = df.drop(df.columns[0], axis=1)
     # df = df.dropna()
     # print(df.head)
 
-# combine_prices()
-header = ['drop','v','vw','o','c','h','l','t','n','company']
+combine_prices()
+header.insert(0,'drop')
+header.append('company')
 
 
 def moodData():
     with open('date_to_moods.json') as f:
         moods = json.load(f)
-    df = pd.read_csv('combined_prices.csv', names=header)
+    df = pd.read_csv('combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
     df['calm'] = df.apply(lambda x : moods.get(x['t'],[0,0,0,0])[0], axis=1)
     df['happy'] = df.apply(lambda x: moods.get(x['t'], [0, 0, 0, 0])[1], axis=1)
@@ -61,10 +69,11 @@ def moodData():
     df = df.sample(frac=1, random_state=0)
     df.to_pickle('mood.pkl')
 
-def finberData():
-    with open('finbert.json') as f:
+def finberData(summarize = False):
+    filename = 'finbert_with_summarize' if summarize else 'finbert'
+    with open(filename + '.json') as f:
         finbertJSON = json.load(f)
-    df = pd.read_csv('combined_prices.csv', names=header)
+    df = pd.read_csv('combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
     def getFinData(x, dataName):
         try:
@@ -78,16 +87,16 @@ def finberData():
     df['finbert_negative'] = df.apply(lambda x : getFinData(x, 'negative'), axis=1)
     df['finbert_neutral'] = df.apply(lambda x: getFinData(x, 'neutral'), axis=1)
     df['finbert_positive'] = df.apply(lambda x: getFinData(x, 'positive'), axis=1)
-    df['finbert_sentiment_score'] = df.apply(lambda x: getFinData(x, 'sentiment_score'), axis=1)
+    # df['finbert_sentiment_score'] = df.apply(lambda x: getFinData(x, 'sentiment_score'), axis=1)
     df = df.drop('t', axis=1)
     df = df.drop('company', axis=1)
     df = df.sample(frac=1, random_state=0)
-    df.to_pickle('finbert.pkl')
+    df.to_pickle(filename + '.pkl')
 
 def vaderData():
     with open('date_to_company_to_vader.json') as f:
         vaderJSON = json.load(f)
-    df = pd.read_csv('combined_prices.csv', names=header)
+    df = pd.read_csv('combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
     def getVaderData(x, dataName):
         try:
@@ -113,7 +122,7 @@ def SRAFData():
 
     with open('date_to_company_to_sraf.json') as f:
         srafJSON = json.load(f)
-    df = pd.read_csv('combined_prices.csv', names=header)
+    df = pd.read_csv('combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
     def getSRAFData(x, dataName):
         try:
@@ -137,13 +146,13 @@ def SRAFData():
 def allData():
         with open('date_to_moods.json') as f:
             moods = json.load(f)
-        with open('finbert.json') as f:
+        with open('finbert_with_summarize.json') as f:
             finbertJSON = json.load(f)
         with open('date_to_company_to_vader.json') as f:
             vaderJSON = json.load(f)
         with open('date_to_company_to_sraf.json') as f:
             srafJSON = json.load(f)
-        df = pd.read_csv('combined_prices.csv', names=header)
+        df = pd.read_csv('combined_prices_rl.csv', names=header)
         df = df.drop('drop', axis=1)
         df['calm'] = df.apply(lambda x: moods.get(x['t'], [0, 0, 0, 0])[0], axis=1)
         df['happy'] = df.apply(lambda x: moods.get(x['t'], [0, 0, 0, 0])[1], axis=1)
@@ -161,7 +170,7 @@ def allData():
         df['finbert_negative'] = df.apply(lambda x: getFinData(x, 'negative'), axis=1)
         df['finbert_neutral'] = df.apply(lambda x: getFinData(x, 'neutral'), axis=1)
         df['finbert_positive'] = df.apply(lambda x: getFinData(x, 'positive'), axis=1)
-        df['finbert_sentiment_score'] = df.apply(lambda x: getFinData(x, 'sentiment_score'), axis=1)
+        # df['finbert_sentiment_score'] = df.apply(lambda x: getFinData(x, 'sentiment_score'), axis=1)
         def getVaderData(x, dataName):
             try:
                 lst = vaderJSON[x['t']][x['company']]
@@ -199,8 +208,26 @@ def allData():
 # finberData()
 # vaderData()
 # SRAFData()
-
-df = pd.read_pickle('sraf.pkl')
+# finberData(summarize=True)
+# allData()
+method_name = 'alldata'
+# finbert = pd.read_pickle('finbert_with_summarize.pkl')
+# vader = pd.read_pickle('vader.pkl')
+# df = pd.read_pickle('sraf.pkl')
+# mood = pd.read_pickle('mood.pkl')
+# df['finbert_negative'] = pd.Series(finbert['finbert_negative'])
+# df['finbert_positive'] = pd.Series(finbert['finbert_positive'])
+# df['finbert_neutral'] = pd.Series(finbert['finbert_neutral'])
+# df['vader_negative'] = pd.Series(vader['vader_negative'])
+# df['vader_positive'] = pd.Series(vader['vader_positive'])
+# df['vader_neutral'] = pd.Series(vader['vader_neutral'])
+# df['vader_compound'] = pd.Series(vader['vader_compound'])
+# df['calm'] = pd.Series(mood['calm'])
+# df['kind'] = pd.Series(mood['kind'])
+# df['alert'] = pd.Series(mood['alert'])
+# df['happy'] = pd.Series(mood['happy'])
+# df.to_pickle('alldata.pkl')
+df = pd.read_pickle('alldata.pkl')
 print(df.head)
 df = df.dropna()
 ts = 0.2
