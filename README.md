@@ -43,7 +43,7 @@ it contains news articles from 81 big companies. Each company has an array of ar
     4      945355  200.0  106.9900  ...  106.99  2015-12-30 11:58:00  1.0
     ```
 ## Data Preparation:
-* The prehistorical_price data is too big and the articles in news.json are limited. A company won't necessarily have one article on a given day. So we randomly sample 50 rows from a given company's price data on a given day and construct training and testing set base on that. The size of the final data set is about 300000.
+* We formed time series data using only closing price column. Because the size of prehistorical price is too big while the articles are too sparse, we decide to extract the first closing price of a day. We then form time series data and formulate the problem as a regression: use the previous 30 days of data to predict the next days closing price. 
 ```sh
 def combine_prices():
     directory = os.path.join("./historical_price/")
