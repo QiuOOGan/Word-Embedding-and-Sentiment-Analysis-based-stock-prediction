@@ -33,7 +33,7 @@ date_to_moods.json, finbert.json, finbert_with_summarize.json in json_files dire
   2. Run ./src/preprocessing.py. This step can take hours as it needs to generate the rolling prices first. Feel free to contact us for a copy of
   those data to skip this part.
   3. run ./src/lstm/train_lstm.py. Specify which method you want to use. 
-* If you want to further improve upon our json data, make sure to have the related files such as fasttext word vector and such.
+* If you want to further improve upon our json data, make sure to have the related files such as fasttext word vector.
 
 ## Dataset:
 * news.json:
