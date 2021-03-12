@@ -30,5 +30,5 @@ for company in data:
         print("done: ", counter)
 
 
-with open('date_to_company_to_vader.json', 'w') as fp:
+with open('./json_files/date_to_company_to_vader.json', 'w') as fp:
     json.dump(date_to_company_to_arrayOfMethodsScores, fp, sort_keys=True, indent=4)
