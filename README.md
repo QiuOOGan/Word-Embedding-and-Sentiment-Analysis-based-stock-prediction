@@ -152,7 +152,7 @@ for each company on each day.
     }
   ```
 #### finBERT result:
-![](./src/img/finBERT.png =100x100)
+![finBERT](./src/img/finBERT.png)
 ## [Sentence Transformers](https://www.sbert.net/)
 * We mainly used the sentence_transformers, along with [LexRank](https://www.aaai.org/Papers/JAIR/Vol22/JAIR-2214.pdf)
  for summarizing the news articles, as shown on their [repo](https://github.com/UKPLab/sentence-transformers/blob/master/examples/applications/text-summarization/text-summarization.py).
