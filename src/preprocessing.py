@@ -20,6 +20,9 @@ def combine_prices():
         filtered_data = []
         for date in dates:
             prices_of_date = temp[(temp.t == date)]
+            # we can take the average of all the prices here
+            # avg_price = prices_of_date.mean(axis=1)
+            # filtered_data.append(avg_price)
             filtered_data.append(prices_of_date.iloc[[0]])
         temp = pd.concat(filtered_data).reset_index(drop=True)
         closes = temp['c'].values
