@@ -255,6 +255,7 @@ for each company on each day.
         summarization += sentences[idx]
     return summarization
     ```
+* Then we use finBERT on the summarized articles to get the the sentiment score and trained another model.
 #### Sentence Transformers + finBERT result:
 ![Sentence Transformers + finBERT](./src/img/finbert_with_summarize.png)
 ## [NLTK Vader](https://www.nltk.org/_modules/nltk/sentiment/vader.html)
