@@ -3,6 +3,13 @@
 ## Introduction:
 In this project, we used several word embedding methods on the financial news dataset to create additional features to the prehistorical stock price data set and trained a model to predict the close price at a specific time. We formulate the problem as a regression problem. We first construct time series data and use the previous 30 day's data to predict the next day's closing price. The main tools we used are based on a language model called "BERT", i.e Bidirectional Encoder Representations from Transformers. In this project, we will train the model using **LSTM** with each of the tools listed below and compare their results. In the end, we will try to ensemble the tools to train a final model, and hopefully to get a better result.
 
+## BERT
+* BERT is a Transformer-based machine learning technique for NLP. There are two phases BERT that uses to solve problem:
+  * Pretraining
+  * Fine-Tunning for a specific task
+* Take an example of finBERT: finBERT is a further trained BERT by fine-tunning it in the financial domain. 
+Therefore, finBERT can be very helpful on our financial news dataset. The usage of BERT on our project will be explained in more details below.
+
 ## Tools:
 * [BERT](https://arxiv.org/pdf/1810.04805.pdf)
     * [finBERT](https://github.com/ProsusAI/finBERT)
@@ -66,7 +73,7 @@ it contains news articles from 81 big companies. Each company has an array of ar
     4      945355  200.0  106.9900  ...  106.99  2015-12-30 11:58:00  1.0
     ```
 ## Data Preparation (Run ./src/preprocessing.py. Takes hours.):
-* We formed time series data using only closing price column. Because the size of prehistorical price is too big while the articles are too sparse, we decide to extract the first closing price of a day. We then form time series data and formulate the problem as a regression: use the previous 30 days of data to predict the next days closing price. 
+* We formed time series data using only closing price column and time column. Because the size of prehistorical price is too big while the articles are too sparse, we decide to extract only one closing price of a day. The other option might be summarizing the closing price of that day by taking the average. We then form time series data and formulate the problem as a regression: use the previous 30 days of data to predict the next days closing price. 
 * We used all the data in the new.json.
 ```sh
 def combine_prices():
