@@ -216,21 +216,21 @@ for each company on each day.
    ```sh
    result = model.evaluate(test_x,test_y)[1]
    
-  plt.figure()
-  plt.title("Testing RMSE: " + str(result))
-  plt.grid()
-  plt.suptitle(method_name + " Learning Curve")
-  plt.ylabel("loss")
-  plt.xlabel("epochs")
-  plt.ylim(top=max(train_scores),bottom=min(train_scores))
-  plt.plot(np.linspace(0,len(train_scores),len(train_scores)), train_scores, linewidth=1, color="r",
+   plt.figure()
+   plt.title("Testing RMSE: " + str(result))
+   plt.grid()
+   plt.suptitle(method_name + " Learning Curve")
+   plt.ylabel("loss")
+   plt.xlabel("epochs")
+   plt.ylim(top=max(train_scores),bottom=min(train_scores))
+   plt.plot(np.linspace(0,len(train_scores),len(train_scores)), train_scores, linewidth=1, color="r",
          label="Training loss")
-  plt.plot(np.linspace(0,len(test_scores),len(test_scores)), test_scores, linewidth=1, color="b",
+   plt.plot(np.linspace(0,len(test_scores),len(test_scores)), test_scores, linewidth=1, color="b",
           label="Testing loss")
-  legend = plt.legend(loc='upper right', shadow=True, fontsize='medium')
-  legend.get_frame().set_facecolor('C0')
+   legend = plt.legend(loc='upper right', shadow=True, fontsize='medium')
+   legend.get_frame().set_facecolor('C0')
 
-  plt.show()
+   plt.show()
    ```
 ![finBERT](./src/img/finBERT.png)
 ## [Sentence Transformers](https://www.sbert.net/)
@@ -256,7 +256,7 @@ for each company on each day.
     return summarization
     ```
 * Then we use finBERT on the summarized articles to get the the sentiment score and trained another model.
-#### Sentence Transformers + finBERT result:
+* Sentence Transformers + finBERT result:
 ![Sentence Transformers + finBERT](./src/img/finbert_with_summarize.png)
 ## [NLTK Vader](https://www.nltk.org/_modules/nltk/sentiment/vader.html)
 * Vader is one of NLTK's sentiment analysis library and it is quite straight forward to use. It contains 4 scores, negative,
@@ -309,7 +309,7 @@ neutral, positive and compound. We simply store the scores in the same fashion a
    with open('date_to_company_to_vader.json', 'w') as fp:
        json.dump(date_to_company_to_arrayOfMethodsScores, fp, sort_keys=True, indent=4)
    ```
-#### NLTK Vader result:
+* NLTK Vader result:
 ![vader](./src/img/vader.png)
 
 ## Goel and Mittal's Paper (Mood Analysis)
@@ -395,7 +395,7 @@ neutral, positive and compound. We simply store the scores in the same fashion a
        json.dump(date_to_moods, fp, sort_keys=True, indent=4)
   ```
   
-#### Goel and Mittal's Method result:
+* Goel and Mittal's Method result:
 ![mood](./src/img/mood.png)
 ## fasttext
 #### We downloaded the word vectors wiki-news-300d-1M.vec.zip from https://fasttext.cc/docs/en/english-vectors.html and used it to extend the word list that mentioned in the method in Mettal's Paper. 
@@ -507,7 +507,7 @@ def calculate_sraf(text):
 with open('date_to_company_to_sraf.json', 'w') as fp:
     json.dump(LM_text_to_sentiment(), fp, sort_keys=True, indent=4)
 ```
-#### SRAF result:
+* SRAF result:
 ![SRAF](./src/img/sraf.png)
 
 ## Ensemble
@@ -527,7 +527,6 @@ with open('date_to_company_to_sraf.json', 'w') as fp:
 * And we kept the result of the features and trained a model, but the result is not as good as the above ensembled model which contains all the features.
 
 * result:
-
 ![all_data_novader_nosraf](./src/img/all_data_novader_nosraf.png)
 
 ## Futher Possible Improvements:
