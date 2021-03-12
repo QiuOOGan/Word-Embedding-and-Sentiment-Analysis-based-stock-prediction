@@ -227,9 +227,9 @@ def allData():
 # vaderData()
 # SRAFData()
 # finberData(summarize=True)
-allData()
+# allData()
 methods = ['mood','finbert','finbert_with_summarize','vader','sraf','alldata']
-methods = ['alldata']
+# methods = ['alldata']
 # finbert = pd.read_pickle('finbert_with_summarize.pkl')
 # vader = pd.read_pickle('vader.pkl')
 # df = pd.read_pickle('sraf.pkl')
