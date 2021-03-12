@@ -57,7 +57,7 @@ it contains news articles from 81 big companies. Each company has an array of ar
     3      945356  100.0  106.8700  ...  106.87  2015-12-30 11:52:00  1.0
     4      945355  200.0  106.9900  ...  106.99  2015-12-30 11:58:00  1.0
     ```
-## Data Preparation:
+## Data Preparation (./src/preprocessing.py):
 * We formed time series data using only closing price column. Because the size of prehistorical price is too big while the articles are too sparse, we decide to extract the first closing price of a day. We then form time series data and formulate the problem as a regression: use the previous 30 days of data to predict the next days closing price. 
 ```sh
 def combine_prices():
@@ -521,13 +521,6 @@ with open('date_to_company_to_sraf.json', 'w') as fp:
   * we used **NLTK Vader** to give polarity score of the articles, this is similar to the step above.
   * we used the **mood analysis strategy in Goel and Mittal's paper** to extract moods from the articles of a given day.
   * we used **SRAF** to extract LM Sentiment of the articles.
-  ```
-	model = Sequential()
-	model.add(LSTM(50, return_sequences=True, input_shape = (dim[1], dim[2])))  # 30 time step, 15 features
-	model.add(LSTM(50, return_sequences = False))
-	model.add(Dense(25))
-	model.add(Dense(1)) # 1 output: Price
-  ```
 * result:
 ![ALL](./src/img/alldata.png)
 

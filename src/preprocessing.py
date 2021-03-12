@@ -1,8 +1,4 @@
 import json
-from transformers import AutoModelForSequenceClassification
-import nltk
-from finbert.finbert import predict
-import torch
 import os
 import glob
 import pandas as pd
@@ -24,7 +20,6 @@ def combine_prices():
         filtered_data = []
         for date in dates:
             prices_of_date = temp[(temp.t == date)]
-            # prices_of_date = prices_of_date.sample(n=50 if len(prices_of_date) > 50 else len(prices_of_date), random_state=0)
             filtered_data.append(prices_of_date.iloc[[0]])
         temp = pd.concat(filtered_data).reset_index(drop=True)
         closes = temp['c'].values
@@ -49,7 +44,7 @@ def combine_prices():
     # df = df.drop(df.columns[0], axis=1)
     # df = df.dropna()
     # print(df.head)
-# combine_prices()
+combine_prices()
 header.insert(0,'drop')
 header.append('company')
 
@@ -222,12 +217,12 @@ def allData():
         df = df.sample(frac=1, random_state=0)
         df.to_pickle('alldata.pkl')
 
-# moodData()
-# finberData()
-# vaderData()
-# SRAFData()
-# finberData(summarize=True)
-# allData()
+moodData()
+finberData()
+vaderData()
+SRAFData()
+finberData(summarize=True)
+allData()
 methods = ['mood','finbert','finbert_with_summarize','vader','sraf','alldata']
 # methods = ['alldata']
 # finbert = pd.read_pickle('finbert_with_summarize.pkl')
