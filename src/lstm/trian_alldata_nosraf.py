@@ -24,7 +24,7 @@ dim = data_x.shape
 
 # Create Model
 model = Sequential()
-model.add(LSTM(50, return_sequences=True, input_shape = (dim[1], dim[2])))  # 2 time step, 3 features
+model.add(LSTM(50, return_sequences=True, input_shape = (dim[1], dim[2])))  # 30 time step, 15 features
 model.add(LSTM(50, return_sequences = False))
 model.add(Dense(25))
 model.add(Dense(1)) # 1 output: Price
