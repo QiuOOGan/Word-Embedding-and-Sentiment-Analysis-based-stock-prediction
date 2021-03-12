@@ -1,7 +1,7 @@
 import json
 from transformers import AutoModelForSequenceClassification
 import nltk
-from finbert.finbert import predict
+from src.finbert.finbert import predict
 from src.sbert import text_summarization
 nltk.download('punkt')
 model = AutoModelForSequenceClassification.from_pretrained('./models/classifier_model/finbert-sentiment',

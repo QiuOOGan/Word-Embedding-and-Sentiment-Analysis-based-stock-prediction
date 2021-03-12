@@ -9,7 +9,7 @@ from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
 from tqdm import tqdm_notebook as tqdm
 from tqdm import trange
 from nltk.tokenize import sent_tokenize
-from finbert.utils import *
+from src.finbert.utils import *
 import numpy as np
 import logging
 
