@@ -218,7 +218,7 @@ SRAFData()
 finberData(summarize=True)
 allData()
 methods = ['mood','finbert','finbert_with_summarize','vader','sraf','alldata']
-
+os.mkdir('./LSTM_data/')
 def saveToLSTMData(x):
     datapoint = []
     for i in range(1, 31):
@@ -237,10 +237,10 @@ for method_name in methods:
     sentiment_feature_count = int((len(df.columns) - 31)/30)
     data_x = []
     data_y = []
-
     df.apply(lambda x : saveToLSTMData(x), axis=1)
     data_x = np.array(data_x)
     data_y = np.array(data_y)
+
     with open('./LSTM_data/' + method_name + '_x' + '.npy', 'wb') as f:
         np.save(f, data_x)
     with open('./LSTM_data/' + method_name + '_y' + '.npy', 'wb') as f:
