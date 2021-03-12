@@ -426,4 +426,5 @@ def calculate_sraf(text):
 with open('date_to_company_to_sraf.json', 'w') as fp:
     json.dump(LM_text_to_sentiment(), fp, sort_keys=True, indent=4)
 ```
-
+#### SRAF result:
+![SRAF](./src/img/sraf.png)
