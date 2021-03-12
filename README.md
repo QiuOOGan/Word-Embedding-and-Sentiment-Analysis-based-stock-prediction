@@ -48,24 +48,28 @@ it contains news articles from 81 big companies. Each company has an array of ar
 def combine_prices():
     directory = os.path.join("./historical_price/")
     all_files = glob.glob(directory + "*")
-    combined_prices = open('combined_prices.csv','a')
     isHeader = True
-    headers = ""
     for file in all_files:
+        combined_prices = open('./combined_prices_rl.csv', 'a')
         temp = pd.read_csv(file)
-        temp['company'] = file.split('\\')[-1].split('_')[0]
-        temp = temp.drop(temp.columns[0], axis=1)
-        headers = temp.columns
-        temp['t'] = temp['t'].apply(lambda x : x[:10])
+        temp['t'] = temp['t'].apply(lambda x: x[:10])
         dates = temp['t'].unique()
         filtered_data = []
         for date in dates:
             prices_of_date = temp[(temp.t == date)]
-            prices_of_date = prices_of_date.sample(n=50 if len(prices_of_date) > 50 else len(prices_of_date), random_state=0)
-            filtered_data.append(prices_of_date)
+            filtered_data.append(prices_of_date.iloc[[0]])
         temp = pd.concat(filtered_data).reset_index(drop=True)
-        print(temp.head)
-        temp.to_csv('temp.csv')
+        closes = temp['c'].values
+        data = []
+        for i in range(30, len(closes)):
+            arr = []
+            for j in range(i-30, i+1):
+                arr.append(closes[j])
+                arr.append(dates[j])
+            data.append(np.array(arr))
+        data = pd.DataFrame(data, columns=header)
+        data['company'] = file.split('\\')[-1].split('_')[0]
+        data.to_csv('temp.csv')
         with open('temp.csv', 'r') as f:
             for line in f:
                 if isHeader:
@@ -73,7 +77,7 @@ def combine_prices():
                     continue
                 combined_prices.write(line)
             isHeader = True
-    combined_prices.close()
+        combined_prices.close()
    ```
 * The result looks like the following:
 ```
