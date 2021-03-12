@@ -428,3 +428,13 @@ with open('date_to_company_to_sraf.json', 'w') as fp:
 ```
 #### SRAF result:
 ![SRAF](./src/img/sraf.png)
+
+## Ensemble
+* We used all features generated using the above method and trained a final model. The result is shown below.
+* in Summary, our model is ensembled in the following way.
+  * we used **sentence transformer** to summarize the articles, then used **finBERT** to extract sentiment from the articles.
+  * we used **NLTK Vader** to give polarity score of the articles, this is similar to sentence transformer + finBERT.
+  * we used the **mood analysis strategy in Goel and Mittal's paper** to extract moods from the articles of a given day.
+  * we used **SRAF** to extract LM Sentiment of the articles.
+* result:
+![ALL](./src/img/alldata.png)
