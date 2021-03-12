@@ -1,5 +1,5 @@
 # Word Embedding and Sentiment Analysis Based Stock Prediction
-# [Our Presentation Video](https://youtu.be/fyOD4aqVtas)
+# [Our Presentation Video](https://youtu.be/POyRvvsHKbI)
 ## Introduction:
 In this project, we used several word embedding methods on the financial news dataset to create additional features to the prehistorical stock price data set and trained a model to predict the close price at a specific time. We formulate the problem as a regression problem. We first construct time series data and use the previous 30 day's data to predict the next day's closing price. The main tools we used are based on a language model called "BERT", i.e Bidirectional Encoder Representations from Transformers. In this project, we will train the model using **LSTM** with each of the tools listed below and compare their results. In the end, we will try to ensemble the tools to train a final model, and hopefully to get a better result.
 
