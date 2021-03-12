@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from keras.optimizers import Adam
 
 
-method_name = 'sraf'
+method_name = 'alldata_novader_nosraf'
 with open('./LSTM_data/' + method_name + '_x' + '.npy', 'rb') as f:
     data_x = np.load(f)
 with open('./LSTM_data/' + method_name + '_y' + '.npy', 'rb') as f:
@@ -31,7 +31,7 @@ model.add(Dense(1)) # 1 output: Price
 
 
 # Train
-epochs = 120 
+epochs = 120
 train_scores = []
 test_scores = []
 
@@ -39,7 +39,7 @@ train_loss = LambdaCallback(on_epoch_end=lambda batch, logs: train_scores.append
 earlystopper = EarlyStopping(monitor='loss', patience=epochs/10)
 model.compile(optimizer=Adam(beta_1=0.9, beta_2=0.999, epsilon=1e-8), loss='mean_squared_error', metrics=[RootMeanSquaredError()])
 test_loss = LambdaCallback(on_epoch_end=lambda batch, logs: test_scores.append(model.evaluate(test_x, test_y)[0]))
-model.fit(train_x, train_y, batch_size=500, epochs=epochs, callbacks=[train_loss, test_loss])
+model.fit(train_x, train_y, batch_size=2000, epochs=epochs, callbacks=[train_loss, test_loss])
 
 result = model.evaluate(test_x,test_y)[1]
 
@@ -60,4 +60,8 @@ legend = plt.legend(loc='upper right', shadow=True, fontsize='medium')
 legend.get_frame().set_facecolor('C0')
 
 plt.show()
+
+
+
+
 
