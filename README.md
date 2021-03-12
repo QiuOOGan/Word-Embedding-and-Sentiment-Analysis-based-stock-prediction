@@ -27,6 +27,13 @@ pip install gensim
 ```
 * 6 [SRAF: Loughran-McDonald Sentiment Word Lists](https://sraf.nd.edu/textual-analysis/resources/)
 
+## Steps to train our model
+* 1. Make sure you have historical_price folder, date_to_company_to_sraf.json, date_to_company_to_vader.json,
+date_to_moods.json, finbert.json, finbert_with_summarize.json in root directory. These files will be used to produce LSTM data.
+  2. Run ./src/preprocessing.py. This step can take hours as it needs to generate the rolling prices first. Feel free to contact us for a copy of
+  those data to skip this part.
+  3. run ./src/lstm/train_lstm.py. Specify which method you want to use. 
+* If you want to further improve upon our json data, make sure to have the related dataset such as fasttext dictionary and such.
 
 ## Dataset:
 * news.json:
@@ -170,6 +177,61 @@ for each company on each day.
         }
     }
   ```
+#### Forming the LSTM training-ready data
+```shell script
+def finberData(summarize = False):
+    filename = 'finbert_with_summarize' if summarize else 'finbert'
+    with open(filename + '.json') as f:
+        finbertJSON = json.load(f)
+    df = pd.read_csv('./combined_prices_rl.csv', names=header)
+    df = df.drop('drop', axis=1)
+    def getFinData(x, date, dataName):
+        try:
+            lst = finbertJSON[x[date]][x['company']]
+            result = 0
+            for l in lst:
+                result += l['finbert'][dataName]
+            return result/len(lst)
+        except KeyError:
+            return 0
+
+    columns = df.columns
+    for i in range(1, 31):
+        date = columns[2 * i - 1]
+        df[str(i) + 'finbert_sentiment_score'] = df.apply(lambda x: getFinData(x,date, 'sentiment_score'), axis=1)
+        df = df.drop(date, axis=1)
+    df = df.drop('day 31 date', axis=1)
+    df = df.drop('company', axis=1)
+    df = df.sample(frac=1, random_state=0)
+    df.to_pickle(filename + '.pkl')
+
+def saveToLSTMData(x):
+    datapoint = []
+    for i in range(1, 31):
+        timestamp = []
+        timestamp.append(x['day ' + str(i)])
+        for j in range(0, sentiment_feature_count):
+            timestamp.append(x[df.columns[i + 30 + j]])
+        datapoint.append(timestamp)
+    data_x.append(datapoint)
+    data_y.append(x['day 31'])
+
+for method_name in methods:  #Goes over all the methods and produce the LSTM data.
+    df = pd.read_pickle(method_name + '.pkl')  # 'finbert.pkl' in this case
+    print(df.head)
+    df = df.dropna()
+    sentiment_feature_count = int((len(df.columns) - 31)/30)
+    data_x = []
+    data_y = []
+
+    df.apply(lambda x : saveToLSTMData(x), axis=1)
+    data_x = np.array(data_x)
+    data_y = np.array(data_y)
+    with open('./LSTM_data/' + method_name + '_x' + '.npy', 'wb') as f:
+        np.save(f, data_x)
+    with open('./LSTM_data/' + method_name + '_y' + '.npy', 'wb') as f:
+        np.save(f, data_y)
+```
 #### finBERT Training:
 * We used **LSTM** to train the model and the input to LSTM looks like this:
   ```sh

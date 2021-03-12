@@ -87,9 +87,6 @@ def finberData(summarize = False):
     columns = df.columns
     for i in range(1, 31):
         date = columns[2 * i - 1]
-        # df['finbert_negative'] = df.apply(lambda x : getFinData(x, date, 'negative'), axis=1)
-        # df['finbert_neutral'] = df.apply(lambda x: getFinData(x, date,'neutral'), axis=1)
-        # df['finbert_positive'] = df.apply(lambda x: getFinData(x,date, 'positive'), axis=1)
         df[str(i) + 'finbert_sentiment_score'] = df.apply(lambda x: getFinData(x,date, 'sentiment_score'), axis=1)
         df = df.drop(date, axis=1)
     df = df.drop('day 31 date', axis=1)
@@ -114,9 +111,6 @@ def vaderData():
     columns = df.columns
     for i in range(1, 31):
         date = columns[2 * i - 1]
-        # df['vader_negative'] = df.apply(lambda x : getVaderData(x,date, 'neg'), axis=1)
-        # df['vader_neutral'] = df.apply(lambda x: getVaderData(x,date, 'neu'), axis=1)
-        # df['vader_positive'] = df.apply(lambda x: getVaderData(x,date, 'pos'), axis=1)
         df[str(i) + 'vader_compound'] = df.apply(lambda x: getVaderData(x,date, 'compound'), axis=1)
         df = df.drop(date, axis=1)
     df = df.drop('day 31 date', axis=1)
@@ -224,38 +218,6 @@ SRAFData()
 finberData(summarize=True)
 allData()
 methods = ['mood','finbert','finbert_with_summarize','vader','sraf','alldata']
-# methods = ['alldata']
-# finbert = pd.read_pickle('finbert_with_summarize.pkl')
-# vader = pd.read_pickle('vader.pkl')
-# df = pd.read_pickle('sraf.pkl')
-# mood = pd.read_pickle('mood.pkl')
-# df['finbert_negative'] = pd.Series(finbert['finbert_negative'])
-# df['finbert_positive'] = pd.Series(finbert['finbert_positive'])
-# df['finbert_neutral'] = pd.Series(finbert['finbert_neutral'])
-# df['vader_negative'] = pd.Series(vader['vader_negative'])
-# df['vader_positive'] = pd.Series(vader['vader_positive'])
-# df['vader_neutral'] = pd.Series(vader['vader_neutral'])
-# df['vader_compound'] = pd.Series(vader['vader_compound'])
-# df['calm'] = pd.Series(mood['calm'])
-# df['kind'] = pd.Series(mood['kind'])
-# df['alert'] = pd.Series(mood['alert'])
-# df['happy'] = pd.Series(mood['happy'])
-# df.to_pickle('alldata.pkl')
-
-
-
-# ts = 0.2
-# ts = int(len(df)*ts)
-# train = df[:-ts]
-# test = df[-ts:]
-#
-# # Create Variables needed
-# x_train = train.drop(columns='day 31')
-# x_train = x_train.values
-# y_train = train['day 31']
-# x_test = test.drop(columns='day 31')
-# x_test = x_test.values
-# y_test = test['day 31']
 
 def saveToLSTMData(x):
     datapoint = []
