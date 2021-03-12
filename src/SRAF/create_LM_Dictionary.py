@@ -22,33 +22,3 @@ for cat in categories:
 
 with open('LM_Dict.json', 'w') as fp:
     json.dump(LM_Dict, fp, sort_keys=True, indent=4)
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
