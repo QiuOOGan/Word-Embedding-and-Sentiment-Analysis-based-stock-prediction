@@ -2,7 +2,7 @@ import json
 import nltk
 import math
 
-f = open('LM_Dict.json')
+f = open('./json_files/LM_Dict.json')
 LM_Dict = json.load(f)
 
 def LM_text_to_sentiment():
@@ -42,6 +42,6 @@ def calculate_sraf(text):
 	return list(sentiments.values())
 
 
-with open('date_to_company_to_sraf.json', 'w') as fp:
+with open('./json_files/date_to_company_to_sraf.json', 'w') as fp:
     json.dump(LM_text_to_sentiment(), fp, sort_keys=True, indent=4)
 
