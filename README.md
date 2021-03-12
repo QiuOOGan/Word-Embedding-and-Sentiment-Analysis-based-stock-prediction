@@ -528,3 +528,11 @@ with open('date_to_company_to_sraf.json', 'w') as fp:
 * result:
 
 ![all_data_novader_nosraf](./src/img/all_data_novader_nosraf.png)
+
+## Futher Possible Improvements:
+* Gather more news data. Right now, they are to sparse compare to the prehistorical data we have.
+* Gather some data from social media like tweeter which can be easier to extract public moods from.
+* Extend the word list in mood analysis method (Goel and Mittal's paper).
+* Try different LSTM hyper-parameter and tune them.
+* Try use earlier prices as input, for example, use the previous 60 days prices. 
+* Try a different method when using the SRAF LM sentiments.
