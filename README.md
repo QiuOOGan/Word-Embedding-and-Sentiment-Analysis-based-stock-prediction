@@ -521,6 +521,13 @@ with open('date_to_company_to_sraf.json', 'w') as fp:
   * we used **NLTK Vader** to give polarity score of the articles, this is similar to the step above.
   * we used the **mood analysis strategy in Goel and Mittal's paper** to extract moods from the articles of a given day.
   * we used **SRAF** to extract LM Sentiment of the articles.
+  ```
+	model = Sequential()
+	model.add(LSTM(50, return_sequences=True, input_shape = (dim[1], dim[2])))  # 30 time step, 15 features
+	model.add(LSTM(50, return_sequences = False))
+	model.add(Dense(25))
+	model.add(Dense(1)) # 1 output: Price
+  ```
 * result:
 ![ALL](./src/img/alldata.png)
 
