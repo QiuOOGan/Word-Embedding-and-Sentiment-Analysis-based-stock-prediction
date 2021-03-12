@@ -1,7 +1,7 @@
 # Word Embedding and Sentiment Analysis Based Stock Prediction
 
 ## Introduction:
-In this project, we used several word embedding methods on the financial news dataset to create additional features to the prehistorical stock price data set and trained a model to predict the close price at a specific time. The main tools we used are based on a language model called "BERT", i.e Bidirectional Encoder Representations from Transformers. In this project, we will train the model with each of the tools listed below and compare their results. In the end, we will try to ensemble the tools to train a final model.
+In this project, we used several word embedding methods on the financial news dataset to create additional features to the prehistorical stock price data set and trained a model to predict the close price at a specific time. We formulate the problem as a regression problem. We first construct time series data and use the previous 30 day's data to predict the next day's closing price. The main tools we used are based on a language model called "BERT", i.e Bidirectional Encoder Representations from Transformers. In this project, we will train the model using **LSTM** with each of the tools listed below and compare their results. In the end, we will try to ensemble the tools to train a final model, and hopefully to get a better result.
 
 ## Tools:
 * [BERT](https://arxiv.org/pdf/1810.04805.pdf)
@@ -11,6 +11,21 @@ In this project, we used several word embedding methods on the financial news da
 * [NLTK Vader](https://www.nltk.org/_modules/nltk/sentiment/vader.html)
 * [Goel and Mittal's Paper](http://cs229.stanford.edu/proj2011/GoelMittal-StockMarketPredictionUsingTwitterSentimentAnalysis.pdf)
 * [Software Repository for Accounting and Finance](https://sraf.nd.edu/textual-analysis/)
+
+## Prerequisites
+* 1 Install [finBERT](https://github.com/ProsusAI/finBERT) as the reository suggested. Specifically, you need the model downloaded from this link: [model's link](https://huggingface.co/ProsusAI/finbert)
+* 2 Install [Sentence Transformers](https://github.com/UKPLab/sentence-transformers).
+* 3 Vader. Install nltk
+``` sh
+ pip install nltk
+```
+* 4 [fasttext](https://fasttext.cc). Specifically, you need the model: wiki-news-300d-1M.vec.zip from this [link](https://fasttext.cc/docs/en/english-vectors.html)
+* 5 gensim
+``` sh
+pip install gensim
+```
+* 6 [SRAF: Loughran-McDonald Sentiment Word Lists](https://sraf.nd.edu/textual-analysis/resources/)
+
 
 ## Dataset:
 * news.json:
@@ -90,19 +105,7 @@ def combine_prices():
 5      41.4800  2016-01-07  40.3500   ...    37.8500   2016-02-16     AAL
 6      40.3500  2016-01-08  40.3800   ...    38.3300   2016-02-17     AAL
 ```
-## Prerequisites
-* 1 Install [finBERT](https://github.com/ProsusAI/finBERT) as the reository suggested. Specifically, you need the model downloaded from this link: [model's link](https://huggingface.co/ProsusAI/finbert)
-* 2 Install [Sentence Transformers](https://github.com/UKPLab/sentence-transformers).
-* 3 Vader. Install nltk
-``` sh
- pip install nltk
-```
-* 4 [fasttext](https://fasttext.cc). Specifically, you need the model: wiki-news-300d-1M.vec.zip from this [link](https://fasttext.cc/docs/en/english-vectors.html)
-* 5 gensim
-``` sh
-pip install gensim
-```
-* 6 [SRAF: Loughran-McDonald Sentiment Word Lists](https://sraf.nd.edu/textual-analysis/resources/)
+
 ## [finBERT](https://github.com/ProsusAI/finBERT)
 #### Setup
 * We start off by cloning the repo into a local directory and create a the corresponding conda environment with the necessary
@@ -166,7 +169,69 @@ for each company on each day.
         }
     }
   ```
+#### finBERT Training:
+* We used **LSTM** to train the model and the input to LSTM looks like this:
+  ```sh
+  [
+    #data point 1
+    [
+      [closing_price, finbert_sentiment_score] # time step 1
+      [closing_price, finbert_sentiment_score] # time step 2
+      ...
+      [closing_price, finbert_sentiment_score] # time step 30
+    ]
+    
+    #data point 2
+    [
+      [closing_price, finbert_sentiment_score] # time step 1
+      [closing_price, finbert_sentiment_score] # time step 2
+      ...
+      [closing_price, finbert_sentiment_score] # time step 30
+    ]
+    ...
+  ]  
+  ```
+* LSTM Architecture:
+  ```sh
+  model = Sequential()
+  model.add(LSTM(50, return_sequences=True, input_shape = (dim[1], dim[2])))  # input_shape = (30, 2) in this case
+  model.add(LSTM(50, return_sequences = False))
+  model.add(Dense(25))
+  model.add(Dense(1)) # 1 output: Price
+  ```
+* Training:
+  * Use the adam optimizer.
+  * Record train_loss and test_loss each epoch.
+  * Use an EarlyStopper.
+  * When training the model of the other methods, we used this same code, so we can compare them. We choose not to show this code again for the other methods, since they are the same.
+  ```sh
+  train_loss = LambdaCallback(on_epoch_end=lambda batch, logs: train_scores.append(logs['loss']))
+  test_loss = LambdaCallback(on_epoch_end=lambda batch, logs: test_scores.append(model.evaluate(test_x, test_y)[0]))
+  earlystopper = EarlyStopping(monitor='loss', patience=epochs/10)
+  model.compile(optimizer=Adam(beta_1=0.9, beta_2=0.999, epsilon=1e-8), loss='mean_squared_error', metrics=[RootMeanSquaredError()])
+  model.fit(train_x, train_y, batch_size=2000, epochs=epochs, callbacks=[train_loss, test_loss])
+  ```
 #### finBERT result:
+* Plot the curve recorded by the the lambda function above and show the testing result:
+   ```sh
+   result = model.evaluate(test_x,test_y)[1]
+   
+  plt.figure()
+  plt.title("Testing RMSE: " + str(result))
+  plt.grid()
+  plt.suptitle(method_name + " Learning Curve")
+  plt.ylabel("loss")
+  plt.xlabel("epochs")
+  plt.ylim(top=max(train_scores),bottom=min(train_scores))
+  plt.plot(np.linspace(0,len(train_scores),len(train_scores)), train_scores, linewidth=1, color="r",
+         label="Training loss")
+  plt.plot(np.linspace(0,len(test_scores),len(test_scores)), test_scores, linewidth=1, color="b",
+          label="Testing loss")
+  legend = plt.legend(loc='upper right', shadow=True, fontsize='medium')
+  legend.get_frame().set_facecolor('C0')
+
+  plt.show()
+   ```
 ![finBERT](./src/img/finBERT.png)
 ## [Sentence Transformers](https://www.sbert.net/)
 * We mainly used the sentence_transformers, along with [LexRank](https://www.aaai.org/Papers/JAIR/Vol22/JAIR-2214.pdf)
@@ -458,6 +523,8 @@ with open('date_to_company_to_sraf.json', 'w') as fp:
 * We also tried something different with the ensembled model
   * Since the result using **SRAF** only is not ideal compared to other methods, we removed this feature.
   * Since **NLTK Vader** and **finBERT** have similar purpose, i.e, polarity, we removed the NLTK Vader Score and kept the feature generated by sentence transformer + finBERT.
-  * And we kept the result of the features and trained a model, but the result is not as good as the above ensembled model which contains all the features.
+* And we kept the result of the features and trained a model, but the result is not as good as the above ensembled model which contains all the features.
+
 * result:
+
 ![all_data_novader_nosraf](./src/img/all_data_novader_nosraf.png)
