@@ -13,7 +13,8 @@ In this project, we used several word embedding methods on the financial news da
 * [Software Repository for Accounting and Finance](https://sraf.nd.edu/textual-analysis/)
 
 ## Prerequisites
-* 1 Install [finBERT](https://github.com/ProsusAI/finBERT) as the reository suggested. Specifically, you need the model downloaded from this link: [model's link](https://huggingface.co/ProsusAI/finbert)
+* 1 Install [finBERT](https://github.com/ProsusAI/finBERT) as the repository suggested. We set up our environment using their
+ environment.yml. Also, you need the model downloaded from this link: [model's link](https://huggingface.co/ProsusAI/finbert)
 * 2 Install [Sentence Transformers](https://github.com/UKPLab/sentence-transformers).
 * 3 Vader. Install nltk
 ``` sh
