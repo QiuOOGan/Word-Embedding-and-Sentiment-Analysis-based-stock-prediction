@@ -75,6 +75,17 @@ def combine_prices():
             isHeader = True
     combined_prices.close()
    ```
+* The result looks like the following:
+```
+       day 1    day 1 date    day 2   ...     day 31   day 31 date  company
+0      43.2100  2015-12-30  42.8200   ...    35.4400   2016-02-09     AAL
+1      42.8200  2015-12-31  41.0900   ...    36.2500   2016-02-10     AAL
+2      41.0900  2016-01-04  41.0000   ...    36.9300   2016-02-11     AAL
+3      41.0000  2016-01-05  40.6200   ...    36.7700   2016-02-12     AAL
+4      40.6200  2016-01-06  41.4800   ...    37.8100   2016-02-13     AAL
+5      41.4800  2016-01-07  40.3500   ...    37.8500   2016-02-16     AAL
+6      40.3500  2016-01-08  40.3800   ...    38.3300   2016-02-17     AAL
+```
 ## Prerequisites
 * 1 Install [finBERT](https://github.com/ProsusAI/finBERT) as the reository suggested. Specifically, you need the model downloaded from this link: [model's link](https://huggingface.co/ProsusAI/finbert)
 * 2 Install [Sentence Transformers](https://github.com/UKPLab/sentence-transformers).
