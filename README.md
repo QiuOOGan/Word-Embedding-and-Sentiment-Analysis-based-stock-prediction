@@ -534,5 +534,5 @@ with open('date_to_company_to_sraf.json', 'w') as fp:
 * Gather some data from social media like tweeter which can be easier to extract public moods from.
 * Extend the word list in mood analysis method (Goel and Mittal's paper).
 * Try different LSTM hyper-parameter and tune them.
-* Try use earlier prices as input, for example, use the previous 60 days prices. 
+* Try use earlier data as input, for example, use the previous 60 days data instead of 30. 
 * Try a different method when using the SRAF LM sentiments.
