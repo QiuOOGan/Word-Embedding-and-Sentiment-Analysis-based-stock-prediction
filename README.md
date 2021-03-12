@@ -175,6 +175,8 @@ for each company on each day.
         summarization += sentences[idx]
     return summarization
     ```
+#### Sentence Transformers + finBERT result:
+![Sentence Transformers + finBERT](./src/img/finbert_with_summarize.png)
 ## [NLTK Vader](https://www.nltk.org/_modules/nltk/sentiment/vader.html)
 * Vader is one of NLTK's sentiment analysis library and it is quite straight forward to use. It contains 4 scores, negative,
 neutral, positive and compound. We simply store the scores in the same fashion as we did for finbert.
