@@ -50,7 +50,7 @@ header.append('company')
 
 
 def moodData():
-    with open('./date_to_moods.json') as f:
+    with open('./json_files/date_to_moods.json') as f:
         moods = json.load(f)
     df = pd.read_csv('./combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
@@ -69,7 +69,7 @@ def moodData():
     df.to_pickle('mood.pkl')
 
 def finberData(summarize = False):
-    filename = 'finbert_with_summarize' if summarize else 'finbert'
+    filename = './json_files/finbert_with_summarize' if summarize else './json_files/finbert'
     with open(filename + '.json') as f:
         finbertJSON = json.load(f)
     df = pd.read_csv('./combined_prices_rl.csv', names=header)
@@ -95,7 +95,7 @@ def finberData(summarize = False):
     df.to_pickle(filename + '.pkl')
 
 def vaderData():
-    with open('./date_to_company_to_vader.json') as f:
+    with open('./json_files/date_to_company_to_vader.json') as f:
         vaderJSON = json.load(f)
     df = pd.read_csv('./combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
@@ -122,7 +122,7 @@ def SRAFData():
     sentiments = {"sraf_negative": 0, "sraf_positive": 1, "sraf_uncertainty": 2, "sraf_litigious": 3,
                   "sraf_strongamodal": 4, "sraf_weakmodal": 5, "sraf_constraining": 6}
 
-    with open('./date_to_company_to_sraf.json') as f:
+    with open('./json_files/date_to_company_to_sraf.json') as f:
         srafJSON = json.load(f)
     df = pd.read_csv('./combined_prices_rl.csv', names=header)
     df = df.drop('drop', axis=1)
@@ -149,13 +149,13 @@ def SRAFData():
     df.to_pickle('sraf.pkl')
 
 def allData():
-        with open('./date_to_moods.json') as f:
+        with open('./json_files/date_to_moods.json') as f:
             moods = json.load(f)
-        with open('./finbert_with_summarize.json') as f:
+        with open('./json_files/finbert_with_summarize.json') as f:
             finbertJSON = json.load(f)
-        with open('./date_to_company_to_vader.json') as f:
+        with open('./json_files/date_to_company_to_vader.json') as f:
             vaderJSON = json.load(f)
-        with open('./date_to_company_to_sraf.json') as f:
+        with open('./json_files/date_to_company_to_sraf.json') as f:
             srafJSON = json.load(f)
         df = pd.read_csv('./combined_prices_rl.csv', names=header)
         df = df.drop('drop', axis=1)

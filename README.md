@@ -29,7 +29,7 @@ pip install gensim
 
 ## Steps to train our model
 * 1. Make sure you have historical_price folder, date_to_company_to_sraf.json, date_to_company_to_vader.json,
-date_to_moods.json, finbert.json, finbert_with_summarize.json in root directory. These files will be used to produce LSTM data.
+date_to_moods.json, finbert.json, finbert_with_summarize.json in json_files directory. These files will be used to produce LSTM data.
   2. Run ./src/preprocessing.py. This step can take hours as it needs to generate the rolling prices first. Feel free to contact us for a copy of
   those data to skip this part.
   3. run ./src/lstm/train_lstm.py. Specify which method you want to use. 

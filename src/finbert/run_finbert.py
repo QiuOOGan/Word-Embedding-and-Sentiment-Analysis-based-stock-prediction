@@ -7,7 +7,7 @@ nltk.download('punkt')
 model = AutoModelForSequenceClassification.from_pretrained('./models/classifier_model/finbert-sentiment',
                                                            num_labels=3, cache_dir=None)
 summarize = True
-with open('news.json') as f:
+with open('./json_files/news.json') as f:
     data = json.load(f)
 
 finbertJSON = {}
@@ -50,6 +50,6 @@ for company in keys:
         #add more features here
         finbertJSON[article['pub_time'][:10]] = temp
 
-output_file = 'finbert.json' if not summarize else 'finbert_with_summarize.json'
+output_file = './json_files/finbert.json' if not summarize else './json_files/finbert_with_summarize.json'
 with open(output_file, 'w') as fp:
     json.dump(finbertJSON, fp, sort_keys=True, indent=4)
