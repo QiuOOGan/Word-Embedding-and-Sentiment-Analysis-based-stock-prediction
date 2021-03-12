@@ -20,5 +20,5 @@ for cat in categories:
     for word in dfs[cat][first_word.upper()]:
         LM_Dict[cat][word.lower()] = 0
 
-with open('LM_Dict.json', 'w') as fp:
+with open('./json_files/LM_Dict.json', 'w') as fp:
     json.dump(LM_Dict, fp, sort_keys=True, indent=4)
