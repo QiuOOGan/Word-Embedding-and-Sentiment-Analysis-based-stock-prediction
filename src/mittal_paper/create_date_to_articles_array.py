@@ -15,5 +15,5 @@ for key in data:
         else:
             date_to_articles[date] = [article]
 
-with open('date_to_articles_array.json', 'w') as fp:
+with open('./json_files/date_to_articles_array.json', 'w') as fp:
     json.dump(date_to_articles, fp, sort_keys=True, indent=4)
