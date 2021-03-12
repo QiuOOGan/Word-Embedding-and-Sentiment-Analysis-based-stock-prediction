@@ -322,16 +322,17 @@ neutral, positive and compound. We simply store the scores in the same fashion a
   
 #### So, we made some adjustments to make this method at least usable on our dataset:
 * 1. The author used SentiWordNet and a standard Thesaurus to find the synonyms of the POMS questionnaire and extend their
-  word list by adding the synonyms. We chose to use nltk.wordnet and the word vectors model downloaded from fasttext.cc (wiki-news-300d-1M.vec.zip) 
+  word list by adding the synonyms. We chose to use **nltk.wordnet** and the word vectors model downloaded from fasttext.cc (**wiki-news-300d-1M.vec.zip**) 
   to extend our word list. Hence, the word list can be bigger so that we can have more matches when calculating the score for a POMS word.
 * 2. we combined the news from all companies on a given day to find the moods instead of from individual companies. In this way, we will
   have more texts to extract moods from.
-* 3. We find that the word list is still too small, so we used the word vector from fasttext.cc to further extend the word list. For more detial, please   look at the fasttext section.
+* 3. We find that the word list is still too small, so we used the word vector from fasttext.cc to further extend the word list. For more detail, please   look at the **fasttext section**.
   
 #### Steps (./src/mittal_paper/):
 * 1. We find that the POMS mentioned in the paper has evolved from the 65-word questionnaire to a 34-word questionnaire. 
   We then generated the synonyms of the words in the 34-word questionnaire by using the nltk wordnet as following:
   ``` sh
+  # this dictionary is truncated, the full dictionary can be viewed in the file
   POMS_34_words_to_cat = {
     "tense": "ANX",
     "Angry": "ANG",
@@ -355,6 +356,7 @@ neutral, positive and compound. We simply store the scores in the same fashion a
   f1 = open('syn_to_POMS_wordnet.json')
   SYN_TO_POMS = json.load(f1)
   def mittal_text_to_mood(articles):
+    # this dictionary is truncated, the full dictionary can be viewed in the file
     POMS_34_words_score = {
                             "tense": 0,
                             "Angry": 0,
@@ -404,6 +406,8 @@ neutral, positive and compound. We simply store the scores in the same fashion a
 
 # Model downloaded from here: https://fasttext.cc/docs/en/english-vectors.html
 model = gensim.models.KeyedVectors.load_word2vec_format('./src/fasttext/wiki-news-300d-1M.vec')
+
+# this dictionary is truncated, the full dictionary can be viewed in the file
 POMS_34_words_to_cat = {
     "tense": "ANX",
     "Angry": "ANG",
