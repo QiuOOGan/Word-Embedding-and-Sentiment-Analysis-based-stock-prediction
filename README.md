@@ -228,6 +228,9 @@ neutral, positive and compound. We simply store the scores in the same fashion a
    with open('date_to_company_to_vader.json', 'w') as fp:
        json.dump(date_to_company_to_arrayOfMethodsScores, fp, sort_keys=True, indent=4)
    ```
+#### NLTK Vader result:
+![vader](./src/img/vader.png)
+
 ## Goel and Mittal's Paper (Mood Analysis)
 #### There are some problems to replicate this paper on our own dataset:
 * 1. In the paper, the authors used tweets to analysis public mood, but in our case, the text data are news where it
@@ -310,6 +313,9 @@ neutral, positive and compound. We simply store the scores in the same fashion a
    with open('date_to_moods.json', 'w') as fp:
        json.dump(date_to_moods, fp, sort_keys=True, indent=4)
   ```
+  
+#### Goel and Mittal's Method result:
+![mood](./src/img/mood.png)
 ## fasttext
 #### We downloaded the word vectors wiki-news-300d-1M.vec.zip from https://fasttext.cc/docs/en/english-vectors.html and used it to extend the word list that mentioned in the method in Mettal's Paper. 
 * We simply added similar words of the POMS word into our word list. Although they are not entirely synonym, the result word list makes sense when we look at it. The code used to extend the word list is in ./src/fasttext/syn_to_POMS_fasttext.py
