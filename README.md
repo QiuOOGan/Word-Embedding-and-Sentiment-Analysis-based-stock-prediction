@@ -130,7 +130,7 @@ correct directory setup. Our current setup put the model under /models/classifie
             #add more features here
             finbertJSON[article['pub_time'][:10]] = temp
      ```
-#### The Finbert predictions
+#### The finBERT predictions
 * The prediction contains the corresponding sentence, the logit(positive, neutral or negative), prediction and sentiment_score.
 We extract the logits for each category and we extract the score. the final finbert.json file is in the following format. 
 Each company may have multiple articles so we take the average of the scores
@@ -151,6 +151,8 @@ for each company on each day.
         }
     }
   ```
+#### finBERT result:
+![finBERT](https://github.com/QiuOOGan/Word-Embedding-and-Sentiment-Analysis-based-stock-prediction/tree/master/src/img/finBERT.png)
 ## [Sentence Transformers](https://www.sbert.net/)
 * We mainly used the sentence_transformers, along with [LexRank](https://www.aaai.org/Papers/JAIR/Vol22/JAIR-2214.pdf)
  for summarizing the news articles, as shown on their [repo](https://github.com/UKPLab/sentence-transformers/blob/master/examples/applications/text-summarization/text-summarization.py).
