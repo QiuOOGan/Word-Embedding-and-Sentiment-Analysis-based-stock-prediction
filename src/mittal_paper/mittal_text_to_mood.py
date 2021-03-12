@@ -2,7 +2,7 @@ import json
 import nltk
 import math
 
-f1 = open('syn_to_POMS_combined.json')
+f1 = open('./json_files/syn_to_POMS_combined.json')
 SYN_TO_POMS = json.load(f1)
 
 
@@ -106,23 +106,15 @@ def poms_to_states(POMS_34_words_score):
 
     return list(mood_states.values())[2:]
 
-#TODO: How to calculate calm, alert and kind
-# def states_to_final_4_mood(mood_states):
-#     calm, happy, alert, kind = 0, 0, 0, 0
-#     happy = mood_states["VIG"] + (-mood_states["DEP"])
-        
-
-
-
 # Usage:
-f2 = open('date_to_articles_array.json')
+f2 = open('./json_files/date_to_articles_array.json')
 news = json.load(f2)
 
 date_to_moods = {}
 for date in news:
     date_to_moods[date] =  mittal_text_to_mood(news[date])
 
-with open('date_to_moods.json', 'w') as fp:
+with open('./json_files/date_to_moods.json', 'w') as fp:
     json.dump(date_to_moods, fp, sort_keys=True, indent=4)
 
 
