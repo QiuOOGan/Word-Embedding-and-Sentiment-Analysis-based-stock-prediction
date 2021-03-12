@@ -7,7 +7,8 @@ In this project, we used several word embedding methods on the financial news da
 BERT is a Transformer-based machine learning technique for NLP. There are two phases BERT that uses to solve problem:
 * Pretraining
 * Fine-Tunning for a specific task
-Take an example of finBERT: finBERT is a further trained BERT by fine-tunning it in the financial domain. Therefore, finBERT can be very helpful on our financial news dataset. 
+Take an example of finBERT: finBERT is a further trained BERT by fine-tunning it in the financial domain. 
+Therefore, finBERT can be very helpful on our financial news dataset. The usage of BERT on our project will be explained in more details below.
 
 ## Tools:
 * [BERT](https://arxiv.org/pdf/1810.04805.pdf)
