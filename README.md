@@ -3,6 +3,12 @@
 ## Introduction:
 In this project, we used several word embedding methods on the financial news dataset to create additional features to the prehistorical stock price data set and trained a model to predict the close price at a specific time. We formulate the problem as a regression problem. We first construct time series data and use the previous 30 day's data to predict the next day's closing price. The main tools we used are based on a language model called "BERT", i.e Bidirectional Encoder Representations from Transformers. In this project, we will train the model using **LSTM** with each of the tools listed below and compare their results. In the end, we will try to ensemble the tools to train a final model, and hopefully to get a better result.
 
+## BERT
+BERT is a Transformer-based machine learning technique for NLP. There are two phases BERT that uses to solve problem:
+* Pretraining
+* Fine-Tunning for a specific task
+Take an example of finBERT: finBERT is a further trained BERT by fine-tunning it in the financial domain. Therefore, finBERT can be very helpful on our financial news dataset. 
+
 ## Tools:
 * [BERT](https://arxiv.org/pdf/1810.04805.pdf)
     * [finBERT](https://github.com/ProsusAI/finBERT)
