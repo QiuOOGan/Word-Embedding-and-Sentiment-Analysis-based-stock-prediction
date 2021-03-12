@@ -67,6 +67,7 @@ it contains news articles from 81 big companies. Each company has an array of ar
     ```
 ## Data Preparation (Run ./src/preprocessing.py. Takes hours.):
 * We formed time series data using only closing price column. Because the size of prehistorical price is too big while the articles are too sparse, we decide to extract the first closing price of a day. We then form time series data and formulate the problem as a regression: use the previous 30 days of data to predict the next days closing price. 
+* We used all the data in the new.json.
 ```sh
 def combine_prices():
     directory = os.path.join("./historical_price/")
