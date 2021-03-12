@@ -67,5 +67,5 @@ for word in POMS_34_words_to_cat:
             if name not in syn_to_POMS:
                 syn_to_POMS[name] = word
 
-with open('syn_to_POMS_wordnet.json', 'w') as fp:
+with open('./json_files/syn_to_POMS_wordnet.json', 'w') as fp:
     json.dump(syn_to_POMS, fp, sort_keys=True, indent=4)
